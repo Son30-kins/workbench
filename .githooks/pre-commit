@@ -2,7 +2,7 @@
 # Chặn commit nếu có key / file bí mật. Kích hoạt:  git config core.hooksPath .githooks
 
 # 1. Chặn file bí mật theo tên, kể cả khi bị `git add -f`
-blocked=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.env(\..*)?$|\.(pem|key|p12|pfx|crt|sql|dump)$|(^|/)(credentials|service-account|client_secret)[^/]*\.json$|(^|/)\.?mcp\.json$|(^|/)\.kiro/' | grep -vE '(^|/)\.env\.example$')
+blocked=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.env(\..*)?$|\.(pem|key|p12|pfx|crt|sql|dump)$|(^|/)(credentials|service-account|client_secret)[^/]*\.json$|(^|/)\.?mcp\.json$|(^|/)\.kiro/' | grep -vE '(^|/)\.env\.example$|^drizzle/[^/]+\.sql$')
 if [ -n "$blocked" ]; then
   echo "✋ Commit bị chặn — các file sau có thể chứa bí mật:"
   echo "$blocked" | sed 's/^/   - /'

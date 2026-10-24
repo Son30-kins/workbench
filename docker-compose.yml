@@ -1,0 +1,67 @@
+# ManagementTask — file cài đặt cho người dùng.
+#   1. cp .env.example .env   rồi điền các giá trị bắt buộc
+#   2. docker compose up -d
+#   3. mở http://localhost:3000
+# Có tên miền + HTTPS: điền DOMAIN và APP_URL=https://<tên miền>, rồi chạy
+#   docker compose --profile https up -d
+name: managementtask
+
+x-app: &app
+  image: sonnld3007/managementtask:${APP_VERSION:-latest}
+  env_file: .env
+  environment:
+    DATABASE_URL: postgres://mt:${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}@db:5432/managementtask
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  app:
+    <<: *app
+    command: ["web"]
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  worker:
+    <<: *app
+    command: ["worker"]
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: mt
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}
+      POSTGRES_DB: managementtask
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mt -d managementtask"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    # Không mở cổng ra ngoài — chỉ app và worker kết nối được
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to app:3000
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:

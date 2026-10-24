@@ -32,3 +32,8 @@ description = "Giá trị bí mật của app bị gán trực tiếp"
 regex = '''(?i)\b(AUTH_SECRET|POSTGRES_PASSWORD|GOOGLE_CLIENT_SECRET|TELEGRAM_BOT_TOKEN|DOCKERHUB_TOKEN)\s*[=:]\s*['"]?([^\s'"#$<{]{8,})'''
 secretGroup = 2
 keywords = ["auth_secret", "postgres_password", "google_client_secret", "telegram_bot_token", "dockerhub_token"]
+
+  # Bỏ qua code (ví dụ `AUTH_SECRET: z.string().min(32)`), chỉ bắt giá trị thật
+  [[rules.allowlists]]
+  regexTarget = "match"
+  regexes = ['''\.\w+\(''', '''process\.env''', '''getEnv\(\)''', '''[:=]\s*[A-Za-z_$][\w$]*,$''']

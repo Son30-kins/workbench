@@ -27,7 +27,10 @@ backups/
 .idea
 node_modules
 .next
+dist
 coverage
+tests
+scripts/*.local.*
 docs
 *.md
 Dockerfile*

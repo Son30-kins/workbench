@@ -1,0 +1,59 @@
+# ManagementTask
+
+App quản lý công việc **tự host**: điền **form mẫu** → app **tự tạo cả chuỗi task** với hạn chót và mức ưu tiên, **nhắc việc qua Telegram** trước khi đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người.
+
+Mã nguồn & tài liệu: https://github.com/Son30-kins/managementtask
+
+## Cài đặt nhanh
+
+Cần Docker 24+ (có Docker Compose v2).
+
+```bash
+mkdir managementtask && cd managementtask
+curl -O https://raw.githubusercontent.com/Son30-kins/managementtask/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/Son30-kins/managementtask/main/.env.example
+```
+
+Điền `.env`:
+
+| Biến | Cách lấy |
+|---|---|
+| `APP_URL` | Địa chỉ bạn mở app, ví dụ `http://localhost:3000` |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Tạo OAuth client tại Google Cloud Console, redirect URI `<APP_URL>/api/auth/callback/google` |
+| `TELEGRAM_BOT_TOKEN` (nên có) | Chat với `@BotFather` → `/newbot` |
+
+```bash
+docker compose up -d
+```
+
+Mở `APP_URL` → **Đăng nhập bằng Google** → người đầu tiên là admin.
+
+## Cập nhật
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Database tự cập nhật khi khởi động. Nên sao lưu trước:
+
+```bash
+docker compose exec db pg_dump -U mt managementtask > backup-$(date +%F).sql
+```
+
+## Tag
+
+| Tag | Ý nghĩa |
+|---|---|
+| `1.2.3` | Đúng một phiên bản (khuyên dùng — đặt `APP_VERSION=1.2.3` trong `.env`) |
+| `1.2`, `1` | Bản vá mới nhất của nhánh đó |
+| `latest` | Bản ổn định mới nhất |
+
+Kiến trúc: `linux/amd64`, `linux/arm64` (Mac chip M, Raspberry Pi).
+
+## Bảo mật
+
+Image **không chứa bí mật nào**. Mọi key được truyền lúc chạy qua `.env` trên máy bạn; khoá nội bộ của Next.js được sinh riêng cho từng bản cài từ `AUTH_SECRET`. Mỗi bản phát hành được quét bí mật và lỗ hổng (Trivy) trước khi đẩy lên.
+
+Giấy phép MIT.
