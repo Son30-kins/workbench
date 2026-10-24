@@ -47,7 +47,7 @@
   - chưa cài gitleaks → chặn commit luôn, không cho bỏ qua lặng lẽ
   - đã kiểm thử 2026-10-24: chặn đủ 8 ca (token Telegram, `AUTH_SECRET`, Google secret, GitHub token, Docker Hub token, `.env`, `.env.production`, private key)
 - Bật **Secret scanning + Push protection** trong GitHub (Settings → Code security) — GitHub chặn push nếu phát hiện token.
-- CI [`.github/workflows/secret-scan.yml`](../.github/workflows/secret-scan.yml) chạy gitleaks trên **toàn bộ lịch sử** ở mọi push và PR — lưới an toàn khi ai đó bỏ qua hook bằng `--no-verify`.
+- CI [`.github/workflows/secret-scan.yml`](../.github/workflows/secret-scan.yml) chạy gitleaks CLI (bản ghim version + kiểm tra SHA256) trên **toàn bộ lịch sử** ở mọi push và PR — lưới an toàn khi ai đó bỏ qua hook bằng `--no-verify`.
 
 **2. Không để bí mật lọt vào image**
 - `.dockerignore` chặn: `.env*` (trừ `.env.example`), `.git`, `node_modules`, `backups/`, `*.sql`, `docs/`.
@@ -83,7 +83,9 @@
 - [x] `.gitignore`, `.dockerignore`, `.env.example`
 - [x] Pre-commit hook + gitleaks (`.githooks/`, `.gitleaks.toml`)
 - [x] CI quét bí mật (`.github/workflows/secret-scan.yml`)
-- [ ] Tạo repo GitHub `Son30-kins/managementtask` (public), bật branch protection, secret scanning, push protection, 2FA
+- [x] Tạo repo GitHub [`Son30-kins/managementtask`](https://github.com/Son30-kins/managementtask) (public), bật secret scanning, push protection, Dependabot alerts, private vulnerability reporting (2026-10-24)
+- [x] Bảo vệ nhánh `main`: bắt buộc qua PR, CI phải xanh, cấm force-push / xoá nhánh
+- [ ] Bật 2FA cho GitHub và Docker Hub (bạn tự làm)
 - [ ] Thêm `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` vào GitHub Actions secrets
 - [x] CI: lint, typecheck, test (có Postgres), build, build image + quét bí mật trên mọi push / PR
 
