@@ -17,3 +17,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Giữ Node LTS (24); lên bản lớn thì nâng tay cùng engines trong package.json
+      - dependency-name: node
+        update-types: [version-update:semver-major]
