@@ -1,16 +1,16 @@
-# ManagementTask — file cài đặt cho người dùng.
+# Workbench — file cài đặt cho người dùng.
 #   1. cp .env.example .env   rồi điền các giá trị bắt buộc
 #   2. docker compose up -d
 #   3. mở http://localhost:3000
 # Có tên miền + HTTPS: điền DOMAIN và APP_URL=https://<tên miền>, rồi chạy
 #   docker compose --profile https up -d
-name: managementtask
+name: workbench
 
 x-app: &app
-  image: sonnld3007/managementtask:${APP_VERSION:-latest}
+  image: sonnld3007/workbench:${APP_VERSION:-latest}
   env_file: .env
   environment:
-    DATABASE_URL: postgres://mt:${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}@db:5432/managementtask
+    DATABASE_URL: postgres://workbench:${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}@db:5432/workbench
   depends_on:
     db:
       condition: service_healthy
@@ -36,13 +36,13 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: mt
+      POSTGRES_USER: workbench
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}
-      POSTGRES_DB: managementtask
+      POSTGRES_DB: workbench
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mt -d managementtask"]
+      test: ["CMD-SHELL", "pg_isready -U workbench -d workbench"]
       interval: 5s
       timeout: 5s
       retries: 10

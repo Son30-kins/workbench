@@ -1,9 +1,9 @@
-# ManagementTask
+# Workbench
 
 App quản lý công việc tự host bằng Docker: điền **form mẫu** → app **tự sinh task**, có **mức độ ưu tiên**, **nhắc việc qua Telegram** khi sắp đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người.
 
-[![CI](https://github.com/Son30-kins/managementtask/actions/workflows/ci.yml/badge.svg)](https://github.com/Son30-kins/managementtask/actions/workflows/ci.yml)
-[![Docker Hub](https://img.shields.io/docker/v/sonnld3007/managementtask?label=docker%20hub)](https://hub.docker.com/r/sonnld3007/managementtask)
+[![CI](https://github.com/Son30-kins/workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/Son30-kins/workbench/actions/workflows/ci.yml)
+[![Docker Hub](https://img.shields.io/docker/v/sonnld3007/workbench?label=docker%20hub)](https://hub.docker.com/r/sonnld3007/workbench)
 
 ## Tính năng
 
@@ -16,12 +16,12 @@ App quản lý công việc tự host bằng Docker: điền **form mẫu** → 
 
 ## Cài đặt
 
-Xem hướng dẫn đầy đủ trên [Docker Hub](https://hub.docker.com/r/sonnld3007/managementtask) hoặc [docs/08-dong-goi-docker.md](docs/08-dong-goi-docker.md).
+Xem hướng dẫn đầy đủ trên [Docker Hub](https://hub.docker.com/r/sonnld3007/workbench) hoặc [docs/08-dong-goi-docker.md](docs/08-dong-goi-docker.md).
 
 ```bash
-mkdir managementtask && cd managementtask
-curl -O https://raw.githubusercontent.com/Son30-kins/managementtask/main/docker-compose.yml
-curl -o .env https://raw.githubusercontent.com/Son30-kins/managementtask/main/.env.example
+mkdir workbench && cd workbench
+curl -O https://raw.githubusercontent.com/Son30-kins/workbench/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/Son30-kins/workbench/main/.env.example
 # điền .env (Google OAuth, Telegram bot, mật khẩu…)
 docker compose up -d
 ```
@@ -31,13 +31,13 @@ docker compose up -d
 Cần Node.js 24+, Docker.
 
 ```bash
-git clone https://github.com/Son30-kins/managementtask.git
-cd managementtask
+git clone https://github.com/Son30-kins/workbench.git
+cd workbench
 brew install gitleaks                    # bắt buộc — quét bí mật trước mỗi commit
 git config core.hooksPath .githooks      # bật hook chặn commit có bí mật
 npm ci
 cp .env.example .env.local               # điền key dev của riêng bạn (Google OAuth client cho localhost)
-# trong .env.local: DATABASE_URL=postgres://mt@127.0.0.1:5433/managementtask
+# trong .env.local: DATABASE_URL=postgres://workbench@127.0.0.1:5433/workbench
 npm run db:up                            # Postgres cho dev (chỉ mở trên 127.0.0.1)
 npm run db:migrate
 npm run dev                              # web: http://localhost:3000
@@ -61,7 +61,7 @@ Tạo tag `vX.Y.Z` trên `main` → GitHub Actions test, quét bí mật & lỗ 
 
 - Không commit `.env`, key, token, mật khẩu — hook pre-commit và CI (gitleaks) sẽ chặn.
 - Image trên Docker Hub không chứa bí mật nào; khoá nội bộ được sinh riêng cho từng bản cài lúc khởi động.
-- Phát hiện lỗ hổng: báo riêng qua [GitHub Security Advisories](https://github.com/Son30-kins/managementtask/security/advisories/new), không tạo issue công khai.
+- Phát hiện lỗ hổng: báo riêng qua [GitHub Security Advisories](https://github.com/Son30-kins/workbench/security/advisories/new), không tạo issue công khai.
 
 Chi tiết: [docs/09-git-va-bao-mat.md](docs/09-git-va-bao-mat.md) · Tài liệu thiết kế: [docs/](docs/README.md)
 

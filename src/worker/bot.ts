@@ -29,7 +29,7 @@ function taskKeyboard(taskId: string, appUrl: string) {
 }
 
 const HELP =
-  "Bot nhắc việc của ManagementTask.\n\n" +
+  "Bot nhắc việc của Workbench.\n\n" +
   "/today — việc hôm nay và việc quá hạn\n" +
   "/help — hướng dẫn\n\n" +
   "Để kết nối: mở app → Cài đặt → “Kết nối Telegram”.";

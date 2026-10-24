@@ -61,7 +61,7 @@
 ## Cấu trúc thư mục
 
 ```
-ManagementTask/
+workbench/
 ├── docs/                      tài liệu
 ├── drizzle/                   migration SQL (sinh bằng npm run db:generate)
 ├── docker/build-keys.mjs      xoá khoá build khỏi image / sinh khoá riêng từng bản cài

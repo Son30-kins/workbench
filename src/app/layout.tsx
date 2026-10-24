@@ -10,7 +10,7 @@ const exo2 = Exo_2({
 });
 
 export const metadata: Metadata = {
-  title: { default: "ManagementTask", template: "%s · ManagementTask" },
+  title: { default: "Workbench", template: "%s · Workbench" },
   description: "Quản lý công việc: form mẫu tự sinh task, ưu tiên, nhắc việc qua Telegram.",
 };
 

@@ -83,7 +83,7 @@
 - [x] `.gitignore`, `.dockerignore`, `.env.example`
 - [x] Pre-commit hook + gitleaks (`.githooks/`, `.gitleaks.toml`)
 - [x] CI quét bí mật (`.github/workflows/secret-scan.yml`)
-- [x] Tạo repo GitHub [`Son30-kins/managementtask`](https://github.com/Son30-kins/managementtask) (public), bật secret scanning, push protection, Dependabot alerts, private vulnerability reporting (2026-10-24)
+- [x] Tạo repo GitHub [`Son30-kins/workbench`](https://github.com/Son30-kins/workbench) (public), bật secret scanning, push protection, Dependabot alerts, private vulnerability reporting (2026-10-24)
 - [x] Bảo vệ nhánh `main`: bắt buộc qua PR, CI phải xanh, cấm force-push / xoá nhánh
 - [ ] Bật 2FA cho GitHub và Docker Hub (bạn tự làm)
 - [ ] Thêm `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` vào GitHub Actions secrets

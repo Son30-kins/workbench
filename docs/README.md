@@ -1,4 +1,4 @@
-# ManagementTask — Tài liệu dự án
+# Workbench — Tài liệu dự án
 
 App quản lý công việc tự host bằng Docker, nhiều người dùng (đăng nhập Google, dữ liệu riêng từng người), nhắc việc qua Telegram: điền **form mẫu** → app **tự sinh task**, có **mức độ ưu tiên**, và **thông báo** khi task sắp đến hạn.
 
@@ -25,3 +25,4 @@ App quản lý công việc tự host bằng Docker, nhiều người dùng (đ�
 - 2026-10-24: Chốt chỉ phát hành image (không vận hành bản cài chung), đăng lên Docker Hub.
 - 2026-10-24: Chốt thông báo qua Telegram, đăng nhập chỉ bằng Google (bỏ mật khẩu, email, SMTP), code quản lý trên GitHub, quy tắc bảo vệ key bí mật.
 - 2026-10-24: **Code xong MVP** (giai đoạn 0–5): đăng nhập Google, board/danh sách, form mẫu, nhắc việc Telegram, quản trị, Docker, CI/CD. Đã kiểm thử trên máy dev và cài thử bằng Docker. Còn chờ: tạo repo GitHub, token Docker Hub, Google OAuth client, Telegram bot.
+- 2026-10-25: Đổi tên dự án **ManagementTask → Workbench** (repo GitHub, image Docker Hub, tên app, database).
