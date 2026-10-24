@@ -1,5 +1,5 @@
 # Cấu hình gitleaks — dùng bộ luật mặc định (Google, Telegram, Docker Hub, AWS, GitHub token, private key…)
-title = "ManagementTask gitleaks config"
+title = "Workbench gitleaks config"
 
 [extend]
 useDefault = true
@@ -27,7 +27,7 @@ keywords = ["figd_"]
 
 # Luật bổ sung: gán giá trị cho các biến bí mật của app
 [[rules]]
-id = "managementtask-env-secret"
+id = "workbench-env-secret"
 description = "Giá trị bí mật của app bị gán trực tiếp"
 regex = '''(?i)\b(AUTH_SECRET|POSTGRES_PASSWORD|GOOGLE_CLIENT_SECRET|TELEGRAM_BOT_TOKEN|DOCKERHUB_TOKEN)\s*[=:]\s*['"]?([^\s'"#$<{]{8,})'''
 secretGroup = 2

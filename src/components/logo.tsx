@@ -1,6 +1,6 @@
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-label="ManagementTask" role="img">
+    <svg viewBox="0 0 32 32" className={className} aria-label="Workbench" role="img">
       <rect x="3" y="3" width="11" height="11" rx="3.5" fill="currentColor" />
       <rect x="18" y="3" width="11" height="11" rx="3.5" fill="currentColor" opacity="0.55" />
       <rect x="3" y="18" width="11" height="11" rx="3.5" fill="currentColor" opacity="0.55" />

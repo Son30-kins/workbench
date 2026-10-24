@@ -43,9 +43,9 @@ COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 USER app
 EXPOSE 3000
 
-LABEL org.opencontainers.image.title="ManagementTask" \
+LABEL org.opencontainers.image.title="Workbench" \
       org.opencontainers.image.description="Quản lý công việc: form mẫu tự sinh task, ưu tiên, nhắc việc qua Telegram" \
-      org.opencontainers.image.source="https://github.com/Son30-kins/managementtask" \
+      org.opencontainers.image.source="https://github.com/Son30-kins/workbench" \
       org.opencontainers.image.licenses="MIT"
 
 ENTRYPOINT ["docker-entrypoint.sh"]

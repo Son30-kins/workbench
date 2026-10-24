@@ -12,7 +12,8 @@
 | Q5b | Mô hình | Chỉ phát hành image, ai muốn thì tự cài — không vận hành bản cài chung | 2026-10-24 |
 | Q5c | Nơi đăng image | **Docker Hub**, repo public | 2026-10-24 |
 | Q5d | Mã nguồn | **Công khai** trên GitHub | 2026-10-24 |
-| Q5e | Tài khoản | GitHub `Son30-kins` · Docker Hub `sonnld3007` · repo & image `managementtask` | 2026-10-24 |
+| Q5e | Tài khoản | GitHub `Son30-kins` · Docker Hub `sonnld3007` · repo & image `workbench` (đổi tên từ `managementtask`) | 2026-10-25 |
+| Q10 | Tên dự án | **Workbench** (trước đây: ManagementTask) | 2026-10-25 |
 | Q8 | Quản lý code | **Git + GitHub**; key bí mật không bao giờ công khai — xem [09-git-va-bao-mat.md](09-git-va-bao-mat.md) | 2026-10-24 |
 
 ### Chọn theo đề xuất (khi được giao "tự làm tất cả" — đổi được nếu bạn muốn)

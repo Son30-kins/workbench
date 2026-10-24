@@ -5,9 +5,9 @@
 ## 8.1 Trải nghiệm của người cài
 
 ```bash
-mkdir managementtask && cd managementtask
-curl -O https://raw.githubusercontent.com/Son30-kins/managementtask/main/docker-compose.yml
-curl -o .env https://raw.githubusercontent.com/Son30-kins/managementtask/main/.env.example
+mkdir workbench && cd workbench
+curl -O https://raw.githubusercontent.com/Son30-kins/workbench/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/Son30-kins/workbench/main/.env.example
 
 # tạo Google OAuth client + Telegram bot (xem 8.10), rồi điền vào .env
 docker compose up -d
@@ -26,7 +26,7 @@ Migration database tự chạy khi container khởi động — người cài kh
 ```
 ┌──────────────────────── docker compose ────────────────────────┐
 │                                                                │
-│  app      (sonnld3007/managementtask, lệnh `web`)   cổng 3000  │
+│  app      (sonnld3007/workbench, lệnh `web`)   cổng 3000  │
 │  worker   (cùng image, lệnh `worker`)   nhắc việc + bot Telegram│
 │  db       (postgres:17-alpine)          volume pgdata           │
 │  caddy    (tuỳ chọn, profile https)     HTTPS tự động           │
@@ -89,7 +89,7 @@ Kích thước: ~300 MB trên đĩa (riêng file chạy Node 24 đã 122 MB; cod
 
 **Mô hình:** chỉ phát hành image, ai muốn thì tự cài. Không vận hành bản cài chung nào.
 
-- Repo **public** trên Docker Hub: `sonnld3007/managementtask`.
+- Repo **public** trên Docker Hub: `sonnld3007/workbench`.
 - **Tag:**
   | Tag | Ý nghĩa |
   |---|---|
@@ -112,11 +112,11 @@ Kích thước: ~300 MB trên đĩa (riêng file chạy Node 24 đã 122 MB; cod
 - **Người đăng nhập đầu tiên = admin.** Admin có trang quản lý: danh sách người dùng, khoá / xoá tài khoản, danh sách email / tên miền được phép đăng nhập.
 - **Sao lưu:**
   ```bash
-  docker compose exec db pg_dump -U mt managementtask > backup-$(date +%F).sql
+  docker compose exec db pg_dump -U workbench workbench > backup-$(date +%F).sql
   ```
 - **Khôi phục:**
   ```bash
-  docker compose exec -T db psql -U mt managementtask < backup-2026-10-24.sql
+  docker compose exec -T db psql -U workbench workbench < backup-2026-10-24.sql
   ```
 - Dữ liệu nằm trong volume `pgdata` — `docker compose down` **không** xoá dữ liệu; chỉ `down -v` mới xoá.
 

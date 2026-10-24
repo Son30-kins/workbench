@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: sonnld3007/managementtask
+  IMAGE: sonnld3007/workbench
 
 jobs:
   docker:
@@ -42,21 +42,21 @@ jobs:
         with:
           context: .
           load: true
-          tags: managementtask:scan
+          tags: workbench:scan
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Quét bí mật — có là dừng
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: managementtask:scan
+          image-ref: workbench:scan
           scanners: secret
           exit-code: "1"
 
       - name: Quét lỗ hổng nghiêm trọng (đã có bản vá) — có là dừng
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: managementtask:scan
+          image-ref: workbench:scan
           scanners: vuln
           severity: CRITICAL
           ignore-unfixed: true

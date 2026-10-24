@@ -96,7 +96,7 @@ Line-height ≈ 100% cỡ chữ (design rất chặt — khi code nên nới lê
 
 Design này khớp khá tốt với plan. Những gì **giữ nguyên**, **đổi nghĩa** và **cần thêm**:
 
-| Thành phần trong design | Trong app ManagementTask |
+| Thành phần trong design | Trong app Workbench |
 |---|---|
 | Cột To do / In progress / Done | ✅ Giữ — chính là `status` của task (`CANCELLED` ẩn khỏi board) |
 | Nút **New template** | ✅ Giữ — mở trình tạo **form mẫu** (tính năng chính) |

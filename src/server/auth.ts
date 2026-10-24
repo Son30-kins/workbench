@@ -15,7 +15,7 @@ function createAuth() {
   const db = getDb();
 
   return betterAuth({
-    appName: "ManagementTask",
+    appName: "Workbench",
     baseURL: env.APP_URL,
     secret: env.AUTH_SECRET,
     database: drizzleAdapter(db, {

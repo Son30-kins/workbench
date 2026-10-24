@@ -1,17 +1,17 @@
-# ManagementTask
+# Workbench
 
 App quản lý công việc **tự host**: điền **form mẫu** → app **tự tạo cả chuỗi task** với hạn chót và mức ưu tiên, **nhắc việc qua Telegram** trước khi đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người.
 
-Mã nguồn & tài liệu: https://github.com/Son30-kins/managementtask
+Mã nguồn & tài liệu: https://github.com/Son30-kins/workbench
 
 ## Cài đặt nhanh
 
 Cần Docker 24+ (có Docker Compose v2).
 
 ```bash
-mkdir managementtask && cd managementtask
-curl -O https://raw.githubusercontent.com/Son30-kins/managementtask/main/docker-compose.yml
-curl -o .env https://raw.githubusercontent.com/Son30-kins/managementtask/main/.env.example
+mkdir workbench && cd workbench
+curl -O https://raw.githubusercontent.com/Son30-kins/workbench/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/Son30-kins/workbench/main/.env.example
 ```
 
 Điền `.env`:
@@ -39,7 +39,7 @@ docker compose pull && docker compose up -d
 Database tự cập nhật khi khởi động. Nên sao lưu trước:
 
 ```bash
-docker compose exec db pg_dump -U mt managementtask > backup-$(date +%F).sql
+docker compose exec db pg_dump -U workbench workbench > backup-$(date +%F).sql
 ```
 
 ## Tag

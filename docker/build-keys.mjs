@@ -52,7 +52,7 @@ if (mode === "scrub") {
   const secret = process.env.AUTH_SECRET;
   if (!secret) process.exit(0); // migrate.mjs đã báo lỗi thiếu biến trước đó
   const derive = (label, bytes) =>
-    createHmac("sha256", secret).update(`managementtask:${label}`).digest().subarray(0, bytes);
+    createHmac("sha256", secret).update(`workbench:${label}`).digest().subarray(0, bytes);
   setPreview({
     previewModeId: derive("preview-id", 16).toString("hex"),
     previewModeSigningKey: derive("preview-signing", 32).toString("hex"),

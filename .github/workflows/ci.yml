@@ -15,15 +15,15 @@ jobs:
       postgres:
         image: postgres:17-alpine
         env:
-          POSTGRES_USER: mt
-          POSTGRES_DB: managementtask
+          POSTGRES_USER: workbench
+          POSTGRES_DB: workbench
           POSTGRES_HOST_AUTH_METHOD: trust
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U mt"
+          --health-cmd "pg_isready -U workbench"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://mt@localhost:5432/managementtask
+      DATABASE_URL: postgres://workbench@localhost:5432/workbench
       APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -56,12 +56,12 @@ jobs:
         with:
           context: .
           load: true
-          tags: managementtask:ci
+          tags: workbench:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Quét bí mật trong image
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: managementtask:ci
+          image-ref: workbench:ci
           scanners: secret
           exit-code: "1"

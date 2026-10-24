@@ -34,7 +34,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Ưu tiên rõ ràng, hạn chót tự tính, nhắc việc qua Telegram trước khi quá hạn.
           </p>
         </div>
-        <p className="text-sm text-white/40">ManagementTask · tự host bằng Docker</p>
+        <p className="text-sm text-white/40">Workbench · tự host bằng Docker</p>
       </section>
 
       <section className="flex items-center justify-center bg-app px-6 py-16">
