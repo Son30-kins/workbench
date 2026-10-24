@@ -2,7 +2,7 @@
 # Một image cho cả web (`web`) và worker (`worker`).
 # KHÔNG có bí mật nào trong image — mọi cấu hình truyền vào lúc chạy qua .env.
 
-FROM node:24-alpine AS base
+FROM node:25-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
