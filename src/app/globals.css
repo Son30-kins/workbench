@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens — theo docs/07-ui-design.md (Figma "To do list dashboard") */
+:root {
+  --app: #ffffff;
+  --panel: #fafafb;
+  --column: #ffffff;
+  --card: #ffffff;
+  --fg: #1c1d22;
+  --fg-2: rgb(28 29 34 / 0.55);
+  --line: rgb(28 29 34 / 0.08);
+  --line-strong: rgb(28 29 34 / 0.16);
+  --track: rgb(28 29 34 / 0.08);
+  --hover: rgb(28 29 34 / 0.05);
+  --primary: #1c1d22;
+  --on-primary: #ffffff;
+  --muted: #888da7;
+  color-scheme: light;
+}
+
+.dark {
+  --app: #2a2b2f;
+  --panel: #222327;
+  --column: #24262c;
+  --card: #292b31;
+  --fg: #ffffff;
+  --fg-2: rgb(255 255 255 / 0.55);
+  --line: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.18);
+  --track: rgb(255 255 255 / 0.1);
+  --hover: rgb(255 255 255 / 0.06);
+  --primary: #4b69ff;
+  --on-primary: #ffffff;
+  --muted: #989caa;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-app: var(--app);
+  --color-panel: var(--panel);
+  --color-column: var(--column);
+  --color-card: var(--card);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-track: var(--track);
+  --color-hover: var(--hover);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-muted: var(--muted);
+  --color-sidebar: #1c1d22;
+  --color-brand: #4b69ff;
+  --color-danger: #ff7979;
+  --color-warning: #ffa048;
+  --color-success: #78d700;
+  --color-urgent: #ff4d4f;
+  --font-sans: var(--font-exo2), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--app);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+dialog::backdrop {
+  background: rgb(15 16 20 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+/* Thanh cuộn mảnh cho cột board */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}

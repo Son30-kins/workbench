@@ -1,0 +1,19 @@
+# Chỉ dùng khi phát triển: chạy Postgres, app chạy bằng `npm run dev` bên ngoài Docker.
+# Database chỉ mở trên 127.0.0.1 của máy dev nên không cần mật khẩu.
+# KHÔNG dùng file này cho bản cài thật — dùng docker-compose.yml.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: mt
+      POSTGRES_DB: managementtask
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports: ["127.0.0.1:5433:5432"]
+    volumes: ["pgdata-dev:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mt"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata-dev:
