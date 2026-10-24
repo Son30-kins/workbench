@@ -1,0 +1,34 @@
+# Cấu hình gitleaks — dùng bộ luật mặc định (Google, Telegram, Docker Hub, AWS, GitHub token, private key…)
+title = "ManagementTask gitleaks config"
+
+[extend]
+useDefault = true
+
+# Luật bổ sung: token bot Telegram (dạng 123456789:AA...)
+[[rules]]
+id = "telegram-bot-token-generic"
+description = "Telegram bot token"
+regex = '''\b[0-9]{8,10}:AA[0-9A-Za-z_-]{33}\b'''
+keywords = [":AA"]
+
+# Luật bổ sung: Docker Hub access token (dckr_pat_…, dckr_oat_…)
+[[rules]]
+id = "dockerhub-access-token"
+description = "Docker Hub access token"
+regex = '''\bdckr_(pat|oat)_[A-Za-z0-9_-]{20,}'''
+keywords = ["dckr_"]
+
+# Luật bổ sung: Figma personal access token (figd_…)
+[[rules]]
+id = "figma-personal-access-token"
+description = "Figma personal access token"
+regex = '''\bfigd_[A-Za-z0-9_-]{20,}'''
+keywords = ["figd_"]
+
+# Luật bổ sung: gán giá trị cho các biến bí mật của app
+[[rules]]
+id = "managementtask-env-secret"
+description = "Giá trị bí mật của app bị gán trực tiếp"
+regex = '''(?i)\b(AUTH_SECRET|POSTGRES_PASSWORD|GOOGLE_CLIENT_SECRET|TELEGRAM_BOT_TOKEN|DOCKERHUB_TOKEN)\s*[=:]\s*['"]?([^\s'"#$<{]{8,})'''
+secretGroup = 2
+keywords = ["auth_secret", "postgres_password", "google_client_secret", "telegram_bot_token", "dockerhub_token"]

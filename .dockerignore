@@ -1,0 +1,35 @@
+# Bí mật — không bao giờ đưa vào image
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+credentials*.json
+service-account*.json
+client_secret*.json
+backups/
+*.sql
+*.sql.gz
+*.dump
+
+# Không cần trong image
+.git
+.github
+.githooks
+.claude
+.kiro
+.cursor
+.mcp.json
+**/mcp.json
+.idea
+node_modules
+.next
+coverage
+docs
+*.md
+Dockerfile*
+docker-compose*.yml
+.DS_Store

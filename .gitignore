@@ -1,0 +1,53 @@
+# ===== Bí mật — KHÔNG BAO GIỜ commit =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa*
+id_ed25519*
+credentials*.json
+service-account*.json
+client_secret*.json
+
+# Sao lưu database (có thể chứa dữ liệu người dùng)
+backups/
+*.sql
+*.sql.gz
+*.dump
+
+# ===== Node / Next.js =====
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== Prisma =====
+prisma/*.db
+prisma/*.db-journal
+
+# ===== Hệ điều hành / editor =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# ===== Công cụ AI / MCP (thường chứa token cá nhân) =====
+.kiro/
+.cursor/
+.mcp.json
+**/mcp.json
+.claude/settings.local.json
