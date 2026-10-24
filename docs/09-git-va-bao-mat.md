@@ -53,16 +53,22 @@
 - `.dockerignore` chặn: `.env*` (trừ `.env.example`), `.git`, `node_modules`, `backups/`, `*.sql`, `docs/`.
 - Không dùng `ARG`/`ENV` để truyền bí mật trong `Dockerfile` (giá trị sẽ nằm vĩnh viễn trong layer image).
 - Next.js: chỉ biến có tiền tố `NEXT_PUBLIC_` mới được đưa ra trình duyệt → **cấm** đặt bí mật với tiền tố này; `lib/env.ts` kiểm tra điều này.
-- CI quét image sau khi build: [Trivy](https://github.com/aquasecurity/trivy) (lỗ hổng + bí mật) — có lỗi nghiêm trọng thì không đẩy lên Docker Hub.
+- **Khoá Next.js tự sinh lúc build** (Draft Mode, mã hoá Server Action) sẽ giống nhau ở mọi bản cài nếu để trong image công khai. Xử lý ([docker/build-keys.mjs](../docker/build-keys.mjs)):
+  - lúc build: thay bằng giá trị rỗng → image không chứa khoá nào
+  - lúc container khởi động: sinh khoá riêng của bản cài bằng HMAC-SHA256 từ `AUTH_SECRET` và đặt `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`
+- CI quét image bằng [Trivy](https://github.com/aquasecurity/trivy): có bí mật, hoặc lỗ hổng CRITICAL đã có bản vá → **không** đẩy lên Docker Hub.
+- Đã kiểm tra 2026-10-24: export toàn bộ filesystem của image rồi quét bằng gitleaks và Trivy → không có bí mật, không có file `.env`.
 
 **3. Không để bí mật lọt ra lúc chạy**
 - Log không in giá trị biến môi trường, token, cookie; lỗi trả về client không chứa stack trace.
 - Token liên kết Telegram lưu dạng hash, hết hạn sau 10 phút, dùng 1 lần.
 - `db` không mở cổng ra ngoài; container chạy user non-root.
 
-**4. Docker Hub**
+**4. Docker Hub & chuỗi cung ứng**
 - Dùng **Personal Access Token** quyền *Read & Write* cho CI — không dùng mật khẩu tài khoản.
 - Bật **xác thực 2 lớp (2FA)** cho tài khoản Docker Hub và GitHub.
+- Mọi GitHub Action được **ghim theo commit SHA** (không theo tag có thể bị đổi); workflow chỉ có quyền `contents: read`.
+- **Dependabot** đề xuất cập nhật npm, GitHub Actions và base image hằng tuần.
 
 ## 9.5 Nếu lỡ lộ bí mật
 
@@ -79,7 +85,7 @@
 - [x] CI quét bí mật (`.github/workflows/secret-scan.yml`)
 - [ ] Tạo repo GitHub `Son30-kins/managementtask` (public), bật branch protection, secret scanning, push protection, 2FA
 - [ ] Thêm `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` vào GitHub Actions secrets
-- [ ] CI: lint, test, build trên mọi PR (khi có code)
+- [x] CI: lint, typecheck, test (có Postgres), build, build image + quét bí mật trên mọi push / PR
 
 ## 9.7 Riêng tư khi repo công khai
 

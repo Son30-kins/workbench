@@ -1,103 +1,85 @@
 # 4. Kiến trúc & công nghệ
 
-## Đề xuất: Web app (chạy được trên máy tính + điện thoại qua trình duyệt / PWA)
+## Công nghệ
 
 | Lớp | Công nghệ | Lý do |
-|-----|-----------|-------|
-| Ngôn ngữ | TypeScript | Một ngôn ngữ cho cả frontend và backend |
-| Framework | Next.js (App Router) | UI + API trong cùng 1 project |
-| UI | Tailwind CSS + shadcn/ui | Làm form, bảng, dialog nhanh |
-| Form | React Hook Form + Zod | Form động từ template, validate |
-| Database | PostgreSQL (chạy local bằng Docker) | Nhiều người dùng dùng chung server → dùng Postgres ngay từ đầu, khỏi chuyển đổi sau |
-| ORM | Prisma hoặc Drizzle | Migration, type-safe |
-| Đăng nhập | Better Auth + Google OAuth | Chỉ đăng nhập Google; thư viện lo phiên, state/PKCE, liên kết tài khoản |
-| Đóng gói | Docker + Docker Compose, image trên Docker Hub | Người khác kéo về và chạy 1 lệnh — xem [08-dong-goi-docker.md](08-dong-goi-docker.md) |
-| Ngày giờ | date-fns + date-fns-tz | Tính hạn tương đối, múi giờ |
-| Template text | Mustache-style tự viết (thay `{{key}}`) | Đơn giản, an toàn |
-| Job nhắc việc | Tiến trình worker chạy mỗi phút (node-cron) | Quét bảng `reminders` |
-| Thông báo | Telegram Bot API (`grammY`) | Đã chốt; bot chạy trong worker bằng long polling — không cần tên miền public |
-| PWA | manifest + service worker | Cài lên điện thoại, nhận push |
+|---|---|---|
+| Ngôn ngữ | TypeScript | Một ngôn ngữ cho web, worker, test |
+| Framework | Next.js 16 (App Router, Server Actions, `output: "standalone"`) | UI + API trong một project; build gọn cho Docker |
+| UI | Tailwind CSS 4, lucide-react, dnd-kit | Token màu theo Figma, kéo thả board |
+| Database | PostgreSQL 17 | |
+| ORM | Drizzle ORM + drizzle-kit | Migration là file SQL; chạy migration bằng script nhỏ trong image, không cần CLI |
+| Đăng nhập | Better Auth + Google OAuth | Phiên, state/PKCE, liên kết tài khoản |
+| Ngày giờ | date-fns 4 + @date-fns/tz | Hạn tương đối, múi giờ, giờ yên lặng |
+| Kiểm tra dữ liệu | Zod 4 | Form, template, cấu hình `.env` |
+| Telegram | grammY (long polling) | Không cần tên miền public |
+| Test | Vitest (unit + test tích hợp với Postgres) | |
+| Đóng gói | Docker multi-stage, Docker Compose, image trên Docker Hub | Xem [08-dong-goi-docker.md](08-dong-goi-docker.md) |
 
 ## Sơ đồ
 
 ```
-┌──────────────┐      ┌─────────────────────────┐      ┌──────────┐
-│  Trình duyệt │◄────►│  Next.js (UI + API)     │◄────►│ Database │
-│  / PWA       │      └─────────────────────────┘      └────▲─────┘
-└──────▲───────┘                                           │
-       │ đăng nhập                                             │
-       ▼                     ┌──────────────────────┐      │
-   Google OAuth              │ Worker               ├──────┘
-                             │ - quét reminder 1'/lần│
-       Telegram ◄───────────►│ - bot Telegram        │
-                             │   (long polling)      │
-                             └──────────────────────┘
+┌──────────────┐      ┌─────────────────────────────┐      ┌────────────┐
+│  Trình duyệt │◄────►│ app (Next.js)               │◄────►│ PostgreSQL │
+└──────▲───────┘      │ - trang + Server Actions    │      └─────▲──────┘
+       │ đăng nhập    │ - /api/auth (Better Auth)   │            │
+       ▼              │ - /api/health               │            │
+   Google OAuth       └─────────────────────────────┘            │
+                      ┌─────────────────────────────┐            │
+       Telegram ◄────►│ worker (cùng image)         ├────────────┘
+                      │ - quét reminders mỗi 30 giây │
+                      │ - bản tin buổi sáng          │
+                      │ - bot Telegram (long polling)│
+                      └─────────────────────────────┘
 ```
 
 ## Luồng chính
 
 **Đăng nhập Google & phân quyền**
-1. Bấm "Đăng nhập bằng Google" → Google → quay về `APP_URL/api/auth/callback/google`.
-2. Kiểm tra email có được phép không (danh sách email / tên miền); người đầu tiên của bản cài → `ADMIN`.
-3. Middleware kiểm tra phiên ở mọi route trong app; chưa đăng nhập → chuyển về `/login`.
-4. Mỗi API lấy `userId` từ phiên (không bao giờ nhận `userId` từ client).
-5. Mọi truy vấn đi qua lớp dữ liệu có sẵn điều kiện `where user_id = userId` — tránh quên lọc ở từng chỗ.
+1. "Đăng nhập bằng Google" → Google → `APP_URL/api/auth/callback/google`.
+2. Hook tạo tài khoản: chỉ nhận email đã xác minh, kiểm tra danh sách email / tên miền được phép và trạng thái mở đăng ký; người đầu tiên → `ADMIN`; tạo sẵn 3 form mẫu.
+3. Hook tạo phiên: tài khoản bị khoá → từ chối.
+4. `proxy.ts` chặn sớm khi chưa có cookie phiên; mỗi trang / Server Action gọi `requireUser()` để kiểm tra thật.
+5. `userId` luôn lấy từ phiên, không bao giờ nhận từ trình duyệt.
 
-**Điền form → tạo task**
-1. Người dùng chọn template, điền form (form render động từ `template_fields`).
-2. API `POST /api/templates/:id/preview` → trả về danh sách task dự kiến (chưa lưu).
-3. Người dùng xác nhận → `POST /api/templates/:id/run` → trong 1 transaction: tạo `template_run`, các `task`, các `reminder`.
+**Điền form → tạo task** ([src/core/template-engine.ts](../src/core/template-engine.ts))
+1. Form render động từ `template.fields`.
+2. "Xem trước": kiểm tra dữ liệu, thay `{{biến}}`, tính hạn theo múi giờ người dùng, bỏ task không thoả điều kiện, cảnh báo hạn trong quá khứ.
+3. "Tạo N task": một transaction tạo `template_run` + các task + task con + lịch nhắc.
 
-**Sinh reminder** (hàm `scheduleReminders(task)`)
-1. Huỷ các reminder `PENDING` cũ của task.
-2. Lấy lịch nhắc theo `priority` từ settings của chủ task.
-3. Với mỗi mốc: `fire_at = due_at - offset`; bỏ qua mốc đã qua; dời nếu rơi vào giờ yên lặng.
-4. Thêm 1 reminder `OVERDUE` tại `due_at`.
+**Lịch nhắc** ([src/core/reminder-schedule.ts](../src/core/reminder-schedule.ts))
+- Mỗi mốc = hạn − khoảng nhắc theo ưu tiên; bỏ mốc đã qua.
+- Rơi vào giờ yên lặng (trừ Khẩn cấp) → dời tới lúc hết giờ yên lặng; nếu như vậy sẽ trễ hạn → nhắc sớm ngay trước giờ yên lặng.
+- Luôn có 1 mốc "quá hạn" đúng lúc hết hạn; sau khi gửi, worker hẹn lần tiếp theo sau N giờ (mặc định 24).
 
-**Worker gửi thông báo** (mỗi phút)
-1. Lấy reminder `PENDING` có `fire_at <= now`.
-2. Kiểm tra task còn chưa xong → gửi qua các kênh đang bật của chủ task → đánh dấu `SENT` (hoặc `FAILED` + thử lại).
-3. Với `OVERDUE`: sau khi gửi, tạo reminder `OVERDUE` tiếp theo sau 24h.
+**Worker** ([src/worker/](../src/worker/))
+1. Mỗi 30 giây: lấy tối đa 50 reminder đến giờ (`FOR UPDATE SKIP LOCKED`), đánh dấu `SENT` ngay.
+2. Bỏ qua task đã xong / người dùng bị khoá; tạo thông báo trong app; gửi Telegram nếu đã liên kết (nút ✅ Xong / ⏰ 1 giờ / 📅 Mai / 🔗 Mở).
+3. Bản tin buổi sáng: đến giờ của từng người (theo múi giờ của họ), đánh dấu `last_digest_on` trước rồi mới gửi.
+4. Bot: `/start <mã>` liên kết tài khoản, `/today`, nút bấm kiểm tra chat thuộc đúng chủ task.
 
-## Cấu trúc thư mục dự kiến
+## Cấu trúc thư mục
 
 ```
 ManagementTask/
-├── docs/                  ← tài liệu (thư mục này)
-├── prisma/schema.prisma
-├── Dockerfile             ← multi-stage, 1 image cho app + worker
-├── docker-entrypoint.sh   ← chạy migration rồi khởi động
-├── docker-compose.yml     ← bản cho người cài: app, worker, db, caddy
-├── docker-compose.dev.yml ← chỉ Postgres, để phát triển
-├── .env.example
-├── .github/workflows/release.yml ← build & đẩy image khi tạo tag
+├── docs/                      tài liệu
+├── drizzle/                   migration SQL (sinh bằng npm run db:generate)
+├── docker/build-keys.mjs      xoá khoá build khỏi image / sinh khoá riêng từng bản cài
+├── Dockerfile, docker-entrypoint.sh, docker-compose.yml, docker-compose.dev.yml
+├── scripts/build-node.mjs     bundle worker + migrate bằng esbuild
 ├── src/
-│   ├── app/
-│   │   ├── login/         ← nút "Đăng nhập bằng Google"
-│   │   ├── (app)/         ← board, list, templates, settings, admin (yêu cầu đăng nhập)
-│   │   └── api/
-│   ├── middleware.ts      ← chặn route khi chưa đăng nhập
-│   ├── components/
-│   ├── lib/
-│   │   ├── auth.ts              ← cấu hình Better Auth
-│   │   ├── template-engine.ts   ← render {{key}}, tính hạn
-│   │   ├── reminders.ts         ← scheduleReminders()
-│   │   ├── env.ts               ← đọc & kiểm tra biến môi trường
-│   │   └── telegram/            ← gửi tin, xử lý nút bấm, liên kết tài khoản
-│   └── worker/index.ts          ← quét reminder + chạy bot Telegram
-└── tests/
+│   ├── app/                   trang (login, (app)/…), /api/auth, /api/health
+│   ├── actions/               Server Actions (kiểm tra đăng nhập rồi gọi server/)
+│   ├── components/            UI: shell, tasks, templates, settings, admin
+│   ├── core/                  logic thuần, có unit test: template engine, lịch nhắc, múi giờ
+│   ├── db/                    schema, kết nối, migrate
+│   ├── lib/                   env, Telegram API, tiện ích
+│   ├── server/                lớp truy cập dữ liệu (luôn lọc theo user_id), auth, session
+│   ├── worker/                worker: vòng xử lý, bot, nội dung tin nhắn
+│   └── proxy.ts               chặn sớm khi chưa đăng nhập
+└── tests/                     Vitest
 ```
 
-## Phương án thay thế
+## Triển khai
 
-- **Đơn giản nhất**: Google Sheets + Apps Script (form = Google Form, nhắc qua email). Nhanh nhưng khó mở rộng.
-- **App desktop**: Tauri/Electron — thông báo hệ điều hành ổn định nhưng chỉ dùng trên 1 máy.
-- **Mobile native**: React Native/Flutter — để sau nếu thật sự cần.
-
-## Deploy (khi cần dùng thật)
-
-App được phát hành dưới dạng **Docker image** — chi tiết ở [08-dong-goi-docker.md](08-dong-goi-docker.md).
-
-- Phát triển local trên Mac (Postgres trong Docker, app chạy `npm run dev`).
-- Người khác tự host: tải `docker-compose.yml` + `.env`, chạy `docker compose up -d`.
-- Bạn muốn tự mở một bản cho mọi người dùng chung: chạy đúng compose đó trên 1 VPS có tên miền, bật profile `https`.
+App phát hành dưới dạng Docker image — chi tiết ở [08-dong-goi-docker.md](08-dong-goi-docker.md).

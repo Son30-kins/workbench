@@ -26,102 +26,64 @@ Migration database tự chạy khi container khởi động — người cài kh
 ```
 ┌──────────────────────── docker compose ────────────────────────┐
 │                                                                │
-│  app      (image managementtask)  → next start, cổng 3000      │
-│  worker   (cùng image)            → node worker.js — nhắc việc │
-│  db       (postgres:17-alpine)    → volume pgdata              │
-│  caddy    (tuỳ chọn, profile)     → HTTPS tự động cho tên miền │
+│  app      (sonnld3007/managementtask, lệnh `web`)   cổng 3000  │
+│  worker   (cùng image, lệnh `worker`)   nhắc việc + bot Telegram│
+│  db       (postgres:17-alpine)          volume pgdata           │
+│  caddy    (tuỳ chọn, profile https)     HTTPS tự động           │
 │                                                                │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-- **Một image duy nhất** cho cả `app` và `worker`, chỉ khác lệnh chạy → build 1 lần, phiên bản luôn khớp nhau.
-- `worker` tách riêng để web restart không làm mất nhắc việc và ngược lại.
-- `db` chỉ mở trong mạng nội bộ của compose, không public cổng ra ngoài.
+- **Một image** cho cả `app` và `worker`, chỉ khác lệnh chạy → phiên bản luôn khớp nhau.
+- Cả hai đều chạy migration khi khởi động; advisory lock của Postgres đảm bảo không chạy chồng lên nhau.
+- `db` không mở cổng ra ngoài, chỉ `app` và `worker` kết nối được.
 - `caddy` bật bằng `docker compose --profile https up -d` khi có tên miền.
 
-## 8.3 `docker-compose.yml` (dự kiến)
+## 8.3 `docker-compose.yml`
 
-```yaml
-services:
-  app:
-    image: sonnld3007/managementtask:${APP_VERSION:-latest}
-    env_file: .env
-    environment:
-      DATABASE_URL: postgres://mt:${POSTGRES_PASSWORD}@db:5432/managementtask
-    ports: ["3000:3000"]
-    depends_on:
-      db: { condition: service_healthy }
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
-    restart: unless-stopped
+File thật: [docker-compose.yml](../docker-compose.yml). Điểm chính:
+- `DATABASE_URL` được ghép từ `POSTGRES_PASSWORD` — thiếu mật khẩu thì `docker compose` dừng ngay và báo lỗi.
+- `app` có healthcheck gọi `/api/health` (kiểm tra kết nối database).
+- `APP_PORT` đổi cổng trên máy (mặc định 3000).
 
-  worker:
-    image: sonnld3007/managementtask:${APP_VERSION:-latest}
-    command: ["node", "worker.js"]
-    env_file: .env
-    environment:
-      DATABASE_URL: postgres://mt:${POSTGRES_PASSWORD}@db:5432/managementtask
-    depends_on:
-      db: { condition: service_healthy }
-    restart: unless-stopped
-
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: mt
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: managementtask
-    volumes: ["pgdata:/var/lib/postgresql/data"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mt"]
-    restart: unless-stopped
-
-  caddy:
-    image: caddy:2-alpine
-    profiles: ["https"]
-    command: caddy reverse-proxy --from ${DOMAIN} --to app:3000
-    ports: ["80:80", "443:443"]
-    volumes: ["caddy_data:/data"]
-    restart: unless-stopped
-
-volumes:
-  pgdata:
-  caddy_data:
-```
+Đã thử 2026-10-24: thư mục trống + `docker-compose.yml` + `.env` → `docker compose up -d` → app healthy, worker chạy, đăng nhập & tạo task được.
 
 ## 8.4 Cấu hình bằng biến môi trường (`.env.example`)
 
 | Biến | Bắt buộc | Mặc định | Ghi chú |
 |---|---|---|---|
-| `APP_URL` | ✅ | `http://localhost:3000` | Địa chỉ người dùng truy cập — dùng cho link trong email |
-| `AUTH_SECRET` | ✅ | — | Chuỗi ngẫu nhiên ≥ 32 ký tự (`openssl rand -base64 32`). App **từ chối khởi động** nếu thiếu |
-| `POSTGRES_PASSWORD` | ✅ | — | Mật khẩu database |
-| `APP_VERSION` | | `latest` | Ghim phiên bản image, ví dụ `1.2.3` |
-| `TZ` | | `Asia/Ho_Chi_Minh` | Múi giờ mặc định cho người dùng mới |
+| `APP_URL` | ✅ | `http://localhost:3000` | Địa chỉ người dùng mở app — dùng cho Google OAuth redirect và link trong Telegram |
+| `AUTH_SECRET` | ✅ | — | ≥ 32 ký tự (`openssl rand -base64 32`). Cũng là gốc để sinh khoá nội bộ riêng của bản cài |
+| `POSTGRES_PASSWORD` | ✅ | — | Chỉ chữ và số (`openssl rand -hex 24`) vì được ghép vào URL kết nối |
 | `GOOGLE_CLIENT_ID` | ✅ | — | OAuth client của chính người cài (xem 8.10) |
 | `GOOGLE_CLIENT_SECRET` | ✅ | — | 🔒 Bí mật |
+| `TELEGRAM_BOT_TOKEN` | Nên có | — | 🔒 Bí mật. Thiếu thì vẫn chạy, nhắc việc chỉ hiện trong app, admin thấy cảnh báo |
+| `APP_VERSION` | | `latest` | Ghim phiên bản image, ví dụ `1.2.3` |
+| `APP_PORT` | | `3000` | Cổng trên máy |
+| `TZ` | | `Asia/Ho_Chi_Minh` | Múi giờ mặc định cho người dùng mới |
 | `ALLOWED_EMAILS` | | — | Giá trị ban đầu, ví dụ `a@gmail.com,b@gmail.com`; admin sửa tiếp trong app |
 | `ALLOWED_DOMAINS` | | — | Ví dụ `congty.com` — để trống = mọi tài khoản Google |
-| `TELEGRAM_BOT_TOKEN` | Nên có | — | 🔒 Bí mật. Thiếu thì app vẫn chạy nhưng không gửi được nhắc việc tới điện thoại, admin thấy cảnh báo |
 | `DOMAIN` | | — | Chỉ cần khi dùng profile `https` |
 
 **Nguyên tắc:**
-- Bắt buộc: `APP_URL`, `AUTH_SECRET`, `POSTGRES_PASSWORD`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Thiếu biến nào → app **từ chối khởi động** và báo rõ thiếu gì.
+- Thiếu / sai biến bắt buộc → container **dừng ngay** và in rõ tên biến cần sửa (không in giá trị).
 - **Không có giá trị mặc định cho bí mật** — mỗi bản cài tự tạo bí mật của riêng mình.
-- Telegram: worker dùng *long polling* → không cần tên miền public, chạy được cả trên máy cá nhân.
+- Telegram dùng *long polling* → không cần tên miền public.
 
 ## 8.5 Dockerfile
 
-Multi-stage, dựa trên `node:22-alpine`:
+File thật: [Dockerfile](../Dockerfile). Multi-stage trên `node:24-alpine`:
 
 1. **deps** — `npm ci`
-2. **build** — `prisma generate`, `next build` với `output: "standalone"`, bundle `worker.ts` → `worker.js`
-3. **runner** — chỉ copy `.next/standalone`, `.next/static`, `public`, `prisma/`, `worker.js`
-   - chạy bằng user không phải root
-   - `ENTRYPOINT` = `docker-entrypoint.sh`: chạy `prisma migrate deploy` (chỉ ở container `app`) → rồi `exec` lệnh chính
-   - `HEALTHCHECK` gọi `/api/health` (kiểm tra kết nối DB)
+2. **build** — `next build` (standalone) + bundle `worker.mjs`, `migrate.mjs` bằng esbuild → **xoá khoá Next.js tự sinh** khỏi bản build ([docker/build-keys.mjs](../docker/build-keys.mjs) `scrub`)
+3. **runner** — chỉ copy bản build; bỏ npm/yarn/corepack; chạy bằng user `app` (uid 1001)
 
-Mục tiêu kích thước image: < 250 MB.
+`docker-entrypoint.sh`:
+- `web`: migrate → sinh khoá riêng của bản cài từ `AUTH_SECRET` (khoá Draft Mode + `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`) → `node server.js`
+- `worker`: migrate → `node dist/worker.mjs`
+- `migrate`: chỉ cập nhật database
+
+Kích thước: ~300 MB trên đĩa (riêng file chạy Node 24 đã 122 MB; code app ~48 MB).
 
 ## 8.6 Phát hành image — Docker Hub
 
