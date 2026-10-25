@@ -1,6 +1,7 @@
 import { TZDate } from "@date-fns/tz";
 import { format } from "date-fns";
-import { vi } from "date-fns/locale/vi";
+import type { Locale } from "@/i18n/config";
+import { getDateLocale } from "@/i18n";
 
 /** Các thành phần ngày giờ của một thời điểm, theo múi giờ `tz`. */
 export function localParts(instant: Date, tz: string) {
@@ -57,8 +58,9 @@ export function startOfLocalDay(instant: Date, tz: string): Date {
   return setLocalTime(instant, "00:00", tz);
 }
 
-export function formatInTz(instant: Date, tz: string, pattern = "dd/MM/yyyy HH:mm"): string {
-  return format(new TZDate(instant.getTime(), tz), pattern, { locale: vi });
+/** Định dạng theo múi giờ `tz`; tên thứ / tháng theo ngôn ngữ `locale`. Mẫu ngày lấy từ t.formats. */
+export function formatInTz(instant: Date, tz: string, pattern: string, locale: Locale): string {
+  return format(new TZDate(instant.getTime(), tz), pattern, { locale: getDateLocale(locale) });
 }
 
 export function isValidTimeZone(tz: string): boolean {

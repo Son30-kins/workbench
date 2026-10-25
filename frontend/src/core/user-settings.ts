@@ -1,6 +1,7 @@
 import { z } from "zod";
+import type { Messages } from "@/i18n";
 
-const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Giờ dạng HH:mm");
+const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const offsets = z.array(z.number().int().min(1).max(60 * 24 * 30)).max(10);
 
 export const userSettingsSchema = z.object({
@@ -37,25 +38,12 @@ export function resolveUserSettings(raw: unknown): UserSettings {
 }
 
 /** Các mốc nhắc có sẵn để chọn trong trang Cài đặt (phút). */
-export const REMINDER_OFFSET_CHOICES = [
-  { minutes: 10080, label: "1 tuần" },
-  { minutes: 4320, label: "3 ngày" },
-  { minutes: 2880, label: "2 ngày" },
-  { minutes: 1440, label: "1 ngày" },
-  { minutes: 720, label: "12 giờ" },
-  { minutes: 360, label: "6 giờ" },
-  { minutes: 180, label: "3 giờ" },
-  { minutes: 120, label: "2 giờ" },
-  { minutes: 60, label: "1 giờ" },
-  { minutes: 30, label: "30 phút" },
-  { minutes: 15, label: "15 phút" },
-  { minutes: 5, label: "5 phút" },
-] as const;
+export const REMINDER_OFFSET_CHOICES = [10080, 4320, 2880, 1440, 720, 360, 180, 120, 60, 30, 15, 5] as const;
 
-export function formatOffset(minutes: number): string {
-  const choice = REMINDER_OFFSET_CHOICES.find((c) => c.minutes === minutes);
-  if (choice) return choice.label;
-  if (minutes % 1440 === 0) return `${minutes / 1440} ngày`;
-  if (minutes % 60 === 0) return `${minutes / 60} giờ`;
-  return `${minutes} phút`;
+/** 10080 → "1 tuần" / "1 week" / "1 Woche" (theo t.offsets). */
+export function formatOffset(minutes: number, t: Messages["offsets"]): string {
+  if (minutes % 10080 === 0) return t.weeks(minutes / 10080);
+  if (minutes % 1440 === 0) return t.days(minutes / 1440);
+  if (minutes % 60 === 0) return t.hours(minutes / 60);
+  return t.minutes(minutes);
 }

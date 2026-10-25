@@ -4,6 +4,8 @@ import { Panel } from "@/components/shell/panel";
 import { MobileNav, Sidebar } from "@/components/shell/sidebar";
 import { TaskDialogProvider } from "@/components/tasks/task-dialog";
 import { formatInTz } from "@/core/time";
+import { SyncLocaleCookie } from "@/i18n/provider";
+import { getI18n, requestLocale } from "@/i18n/server";
 import { countTasks, listNotifications, listTemplates } from "@/server/queries";
 import { requireUser } from "@/server/session";
 
@@ -12,6 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireUser();
+  const [{ locale, t }, cookieLocale] = await Promise.all([getI18n(), requestLocale()]);
   const [counts, templates, notifications] = await Promise.all([
     countTasks(),
     listTemplates(),
@@ -28,7 +31,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             user={{ name: user.name, email: user.email, image: user.image, role: user.role }}
             notifications={notifications.items}
             unread={notifications.unread}
-            todayLabel={formatInTz(new Date(), user.timezone, "dd MMMM yyyy")}
+            todayLabel={formatInTz(new Date(), user.timezone, t.formats.longDate, locale)}
             tz={user.timezone}
           />
           <main className="flex-1 px-4 pb-28 md:px-8 md:pb-10">{children}</main>
@@ -36,6 +39,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <MobileNav isAdmin={user.role === "ADMIN"} />
       </div>
       <AutoRefresh />
+      {cookieLocale !== locale && <SyncLocaleCookie locale={locale} />}
     </TaskDialogProvider>
   );
 }

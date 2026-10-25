@@ -29,6 +29,8 @@ public class DigestService {
 
 	private final TelegramNotificationService telegram;
 
+	private final MessageFormatter formatter;
+
 	private final TransactionTemplate tx;
 
 	private final Clock clock;
@@ -54,10 +56,11 @@ public class DigestService {
 			if (list.isEmpty()) {
 				continue;
 			}
-			var message = MessageFormatter.digest(list, zone, now);
+			var locale = user.getLanguage().locale();
+			var message = formatter.digest(list, zone, now, locale);
 			notifications.add(user.getId(), null, message.title(), "");
 			try {
-				telegram.sendTo(user.getId(), message.html(), null);
+				telegram.sendTo(user.getId(), message.html(), null, locale);
 			}
 			catch (RuntimeException ex) {
 				log.error("Lỗi gửi bản tin cho {}: {}", user.getId(), ex.getMessage());

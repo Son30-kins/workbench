@@ -3,12 +3,15 @@
 import { LayoutGrid, ListTodo, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 import { useTaskDialog } from "./task-dialog";
 
-const VIEW_LABEL: Record<string, string> = { today: "Hôm nay", overdue: "Quá hạn", week: "7 ngày tới" };
+const QUICK_VIEWS = ["all", "today", "overdue", "week"] as const;
+const isQuickView = (v: string | null): v is (typeof QUICK_VIEWS)[number] => QUICK_VIEWS.some((x) => x === v);
 
 export function TasksToolbar() {
+  const { t } = useI18n();
   const pathname = usePathname();
   const params = useSearchParams();
   const { openNew } = useTaskDialog();
@@ -34,8 +37,8 @@ export function TasksToolbar() {
     <div className="mb-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line">
         <nav className="flex">
-          {tab("/", <LayoutGrid size={18} />, "Bảng")}
-          {tab("/list", <ListTodo size={18} />, "Danh sách")}
+          {tab("/", <LayoutGrid size={18} />, t.toolbar.board)}
+          {tab("/list", <ListTodo size={18} />, t.toolbar.list)}
         </nav>
         <div className="flex items-center gap-2 pb-3">
           <button
@@ -43,21 +46,17 @@ export function TasksToolbar() {
             onClick={() => openNew()}
             className="flex items-center gap-1.5 rounded-full border border-line-strong px-4 py-2.5 text-sm font-semibold hover:bg-hover"
           >
-            <Plus size={16} /> Task
+            <Plus size={16} /> {t.toolbar.newTask}
           </button>
           <Link href="/templates" className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-on-primary hover:opacity-90">
-            Điền form mẫu
+            {t.toolbar.fillTemplate}
           </Link>
         </div>
       </div>
       {/* Bộ lọc nhanh khi màn hình nhỏ (panel bên trái bị ẩn) */}
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 xl:hidden">
-        {[
-          ["all", "Tất cả"],
-          ["today", "Hôm nay"],
-          ["overdue", "Quá hạn"],
-          ["week", "7 ngày tới"],
-        ].map(([v, label]) => {
+        {QUICK_VIEWS.map((v) => {
+          const label = v === "all" ? t.views.allShort : t.views[v];
           const next = new URLSearchParams(params);
           next.delete("task");
           if (v === "all") next.delete("view");
@@ -79,8 +78,8 @@ export function TasksToolbar() {
       </div>
       {(view || q) && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-fg-2">Đang lọc:</span>
-          {view && VIEW_LABEL[view] && <Chip label={VIEW_LABEL[view]} href={withoutParam(pathname, params, "view")} />}
+          <span className="text-fg-2">{t.toolbar.filtering}</span>
+          {view !== "all" && isQuickView(view) && <Chip label={t.views[view]} href={withoutParam(pathname, params, "view")} />}
           {q && <Chip label={`“${q}”`} href={withoutParam(pathname, params, "q")} />}
         </div>
       )}

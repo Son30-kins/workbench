@@ -3,6 +3,7 @@
 import type { PriorityValue, StatusValue } from "@/core/priority";
 import type { TemplateField, TemplateRule } from "@/core/template-schema";
 import type { UserSettings } from "@/core/user-settings";
+import type { Locale } from "@/i18n/config";
 
 export type Role = "ADMIN" | "USER";
 
@@ -14,6 +15,7 @@ export type CurrentUser = {
   role: Role;
   timezone: string;
   settings: UserSettings;
+  language: Locale;
 };
 
 export type Subtask = { id: string; title: string; done: boolean; position: number };

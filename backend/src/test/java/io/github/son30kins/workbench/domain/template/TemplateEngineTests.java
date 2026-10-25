@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.son30kins.workbench.domain.shared.Language;
+import io.github.son30kins.workbench.domain.shared.Translatable;
 import io.github.son30kins.workbench.domain.shared.Violation;
 import io.github.son30kins.workbench.domain.shared.TimeZones;
 import io.github.son30kins.workbench.domain.task.Priority;
@@ -49,7 +51,8 @@ class TemplateEngineTests {
 		void baoLoiBatBuoc_So_LuaChonKhongHopLe() {
 			var result = TemplateEngine.validateValues(FIELDS, Map.of("tuan", "abc", "ngay_nop", "", "du_an", "Z"));
 			assertThat(result.errors()).isEqualTo(
-					Map.of("tuan", "Phải là số", "ngay_nop", "Bắt buộc", "du_an", "Lựa chọn không hợp lệ"));
+					Map.of("tuan", Translatable.of("error.form.number"), "ngay_nop", Translatable.of("error.form.required"),
+							"du_an", Translatable.of("error.form.option")));
 		}
 
 		@Test
@@ -64,7 +67,7 @@ class TemplateEngineTests {
 		void ngayKhongTonTaiBiTuChoi() {
 			var result = TemplateEngine.validateValues(FIELDS,
 					Map.of("tuan", "1", "ngay_nop", "2026-02-30", "du_an", "A"));
-			assertThat(result.errors()).containsEntry("ngay_nop", "Ngày không hợp lệ");
+			assertThat(result.errors()).containsEntry("ngay_nop", Translatable.of("error.form.date"));
 		}
 
 	}
@@ -77,7 +80,7 @@ class TemplateEngineTests {
 			var values = TemplateEngine
 				.validateValues(FIELDS, Map.of("tuan", "43", "ngay_nop", "2026-10-31", "du_an", "A", "gui_sep", "on"))
 				.values();
-			var plan = TemplateEngine.plan(FIELDS, WEEKLY_REPORT, values, VN, NOW);
+			var plan = TemplateEngine.plan(FIELDS, WEEKLY_REPORT, values, VN, NOW, Language.VI);
 
 			assertThat(plan.warnings()).isEmpty();
 			assertThat(plan.tasks()).extracting(TemplateEngine.PlannedTask::title)
@@ -93,27 +96,27 @@ class TemplateEngineTests {
 		void boTaskCoDieuKienKhiCheckboxKhongTick() {
 			var values = TemplateEngine.validateValues(FIELDS, Map.of("tuan", "43", "ngay_nop", "2026-10-31", "du_an", "B"))
 				.values();
-			assertThat(TemplateEngine.plan(FIELDS, WEEKLY_REPORT, values, VN, NOW).tasks()).hasSize(2);
+			assertThat(TemplateEngine.plan(FIELDS, WEEKLY_REPORT, values, VN, NOW, Language.VI).tasks()).hasSize(2);
 		}
 
 		@Test
 		void mocLaNgay_khongDatGio_thiHan2359() {
 			var plan = TemplateEngine.plan(FIELDS, List.of(rule("x", "X", new Due("ngay_nop", 0, 0, null))),
-					Map.of("ngay_nop", "2026-11-02"), VN, NOW);
+					Map.of("ngay_nop", "2026-11-02"), VN, NOW, Language.VI);
 			assertThat(fmt(plan.tasks().getFirst().dueAt())).isEqualTo("02/11/2026 23:59");
 		}
 
 		@Test
 		void mocLucDienForm_cong3Ngay2Gio() {
 			var plan = TemplateEngine.plan(List.of(),
-					List.of(rule("x", "X", new Due(TemplateRule.ANCHOR_SUBMITTED, 3, 2, null))), Map.of(), VN, NOW);
+					List.of(rule("x", "X", new Due(TemplateRule.ANCHOR_SUBMITTED, 3, 2, null))), Map.of(), VN, NOW, Language.VI);
 			assertThat(fmt(plan.tasks().getFirst().dueAt())).isEqualTo("27/10/2026 12:00");
 		}
 
 		@Test
 		void khongCoMoc_thiKhongCoHan_mocTrong_thiCanhBao() {
 			var plan = TemplateEngine.plan(FIELDS, List.of(rule("a", "Không hạn", new Due(null, 0, 0, null)),
-					rule("b", "Thiếu ngày", new Due("ngay_nop", 0, 0, null))), Map.of("ngay_nop", ""), VN, NOW);
+					rule("b", "Thiếu ngày", new Due("ngay_nop", 0, 0, null))), Map.of("ngay_nop", ""), VN, NOW, Language.VI);
 			assertThat(plan.tasks()).extracting(TemplateEngine.PlannedTask::dueAt).containsOnlyNulls();
 			assertThat(plan.warnings()).hasSize(1);
 		}
@@ -121,8 +124,8 @@ class TemplateEngineTests {
 		@Test
 		void canhBaoKhiHanDaQua() {
 			var plan = TemplateEngine.plan(FIELDS, List.of(rule("x", "Cũ", new Due("ngay_nop", 0, 0, null))),
-					Map.of("ngay_nop", "2026-10-01"), VN, NOW);
-			assertThat(plan.warnings().getFirst()).contains("quá khứ");
+					Map.of("ngay_nop", "2026-10-01"), VN, NOW, Language.VI);
+			assertThat(plan.warnings()).containsExactly(Translatable.of("template.warning.pastDue", "Cũ"));
 		}
 
 	}
@@ -131,7 +134,7 @@ class TemplateEngineTests {
 	void renderText_dinhDangNgay_checkbox_vaBienCoSan() {
 		var values = new HashMap<String, Object>(Map.of("ngay_nop", "2026-10-31", "gui_sep", false));
 		var out = TemplateEngine.renderText("{{ngay_nop}} | {{gui_sep}} | {{today}} | tuần {{week}} | {{khong_co}}",
-				FIELDS, values, VN, NOW);
+				FIELDS, values, VN, NOW, Language.VI);
 		assertThat(out).isEqualTo("31/10/2026 | Không | 24/10/2026 | tuần 43 | ");
 	}
 
@@ -143,9 +146,9 @@ class TemplateEngineTests {
 			var violations = TemplateValidator.validate(List.of(FIELDS.get(0), FIELDS.get(0)),
 					List.of(rule("r", "{{la}}", new Due("tuan", 0, 0, null))));
 			assertThat(violations).extracting(Violation::message)
-				.anyMatch(m -> m.contains("bị trùng"))
-				.anyMatch(m -> m.contains("{{la}}"))
-				.anyMatch(m -> m.contains("Mốc hạn"));
+				.contains(Translatable.of("error.template.duplicateKey", "tuan"),
+						Translatable.of("error.template.unknownVariable", "la"),
+						Translatable.of("error.template.anchorNotDate"));
 			assertThat(violations).extracting(Violation::path).contains("fields.1.key", "rules.0.due.anchor");
 		}
 
@@ -155,9 +158,14 @@ class TemplateEngineTests {
 		}
 
 		@Test
-		void boFormMacDinhHopLe() {
-			DefaultTemplates.ALL
-				.forEach(t -> assertThat(TemplateValidator.validate(t.fields(), t.rules())).as(t.name()).isEmpty());
+		void boFormMacDinhHopLe_ởMọiNgônNgữ() {
+			for (var language : Language.values()) {
+				var defaults = DefaultTemplates.forLanguage(language);
+				assertThat(defaults).as(language.tag()).hasSize(3);
+				defaults.forEach(t -> assertThat(TemplateValidator.validate(t.fields(), t.rules()))
+					.as(language.tag() + ": " + t.name())
+					.isEmpty());
+			}
 		}
 
 	}

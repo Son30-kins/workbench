@@ -12,10 +12,10 @@ import jakarta.validation.constraints.Size;
  * Bean Validation kiểm tra từng trường; {@link TemplateValidator} kiểm tra liên trường.
  */
 public record TemplateDefinition(
-		@NotBlank(message = "Nhập tên template") @Size(max = 100) String name,
+		@NotBlank(message = "{validation.template.name}") @Size(max = 100) String name,
 		@Size(max = 1000) String description,
 		@NotNull @Size(max = 30) List<@Valid @NotNull TemplateField> fields,
-		@NotNull @Size(min = 1, max = 30, message = "Cần ít nhất 1 task") List<@Valid @NotNull TemplateRule> rules) {
+		@NotNull @Size(min = 1, max = 30, message = "{validation.template.rules}") List<@Valid @NotNull TemplateRule> rules) {
 
 	public TemplateDefinition {
 		name = name == null ? null : name.trim();

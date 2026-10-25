@@ -1,21 +1,17 @@
 package io.github.son30kins.workbench.domain.task;
 
-/** Mức ưu tiên. Thứ tự khai báo = thứ tự sắp xếp (khẩn cấp trước). */
+/**
+ * Mức ưu tiên. Thứ tự khai báo = thứ tự sắp xếp (khẩn cấp trước). Tên hiển thị theo ngôn ngữ nằm ở
+ * {@code messages_*.properties} (khoá {@code priority.URGENT}…).
+ */
 public enum Priority {
 
-	URGENT("Khẩn cấp", "🔴"), HIGH("Cao", "🟠"), MEDIUM("Trung bình", "🔵"), LOW("Thấp", "⚪");
-
-	private final String label;
+	URGENT("🔴"), HIGH("🟠"), MEDIUM("🔵"), LOW("⚪");
 
 	private final String icon;
 
-	Priority(String label, String icon) {
-		this.label = label;
+	Priority(String icon) {
 		this.icon = icon;
-	}
-
-	public String label() {
-		return label;
 	}
 
 	public String icon() {

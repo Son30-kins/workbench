@@ -139,7 +139,23 @@ DTO và value object dùng **`record`** của Java (bất biến, có sẵn equa
 - **`MockMvcTester`** (AssertJ) trong test; **`@ServiceConnection`** + Testcontainers không cần cấu hình datasource.
 - Java: `record`, pattern matching `instanceof`, switch expression, text block, `List.getFirst()`, `Math.clamp`.
 
-## 10.7 Lệnh thường dùng
+## 10.7 Đa ngôn ngữ (vi / en / de)
+
+- **Domain không chứa câu chữ.** Exception và lỗi kiểm tra mang **mã thông điệp** + tham số
+  (`new NotFoundException("error.task.notFound")`, `Violation.of(path, "error.template.duplicateKey", key)`,
+  value object `Translatable`). Câu chữ nằm ở `resources/messages.properties` (tiếng Việt, mặc định),
+  `messages_en.properties`, `messages_de.properties`.
+- **Dịch ở rìa hệ thống.** `GlobalExceptionHandler` dịch theo ngôn ngữ của request; job nền và bot Telegram dịch theo
+  ngôn ngữ của người nhận (`users.language`, Flyway V2) qua `Translator`.
+- **Ngôn ngữ của request** (`LocaleConfig`): cookie `WORKBENCH_LANG` → header `Accept-Language` → `vi`. Web Next.js
+  gửi `Accept-Language` theo ngôn ngữ đang chọn ở mỗi lần gọi API; đổi ngôn ngữ = `PUT /api/me/language`.
+- **Bean Validation** dùng khoá `{validation.task.title}` — Spring Boot tra trong cùng `messages*.properties`.
+- Mọi chuỗi qua `MessageFormat` (`always-use-message-format: true`): nháy đơn viết `''`, số nhiều dùng
+  `{0,choice,1#1 hour|1<{0} hours}`. `MessageBundlesTests` kiểm tra 3 file đủ khoá và đúng cú pháp.
+- **Thêm một thông điệp:** thêm khoá vào cả 3 file → ném exception với mã đó. Thêm một ngôn ngữ: thêm vào enum
+  `Language`, CHECK trong migration mới, file `messages_xx.properties`, và từ điển `frontend/src/i18n/messages/xx.ts`.
+
+## 10.8 Lệnh thường dùng
 
 ```bash
 cd backend

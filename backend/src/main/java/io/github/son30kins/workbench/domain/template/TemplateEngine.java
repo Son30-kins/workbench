@@ -17,7 +17,9 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.github.son30kins.workbench.domain.shared.Language;
 import io.github.son30kins.workbench.domain.shared.TimeZones;
+import io.github.son30kins.workbench.domain.shared.Translatable;
 import io.github.son30kins.workbench.domain.task.Priority;
 
 /**
@@ -35,9 +37,20 @@ public final class TemplateEngine {
 	/** Mốc hạn là một ngày (không có giờ) và quy tắc không đặt giờ → hạn cuối ngày. */
 	private static final LocalTime DEFAULT_DATE_TIME = LocalTime.of(23, 59);
 
-	/** Biến có sẵn, dùng được trong mọi template. */
-	public static final Map<String, String> BUILTIN_VARIABLES = Map.of("today", "Ngày điền form (dd/MM/yyyy)", "week",
-			"Số tuần trong năm", "month", "Tháng", "year", "Năm");
+	/** Biến có sẵn, dùng được trong mọi template: ngày điền form (dd/MM/yyyy), số tuần, tháng, năm. */
+	public static final List<String> BUILTIN_VARIABLES = List.of("today", "week", "month", "year");
+
+	/** Chữ chèn vào nội dung task theo ngôn ngữ của người điền form. */
+	private record Words(String yes, String no, String untitled) {
+
+		static Words of(Language language) {
+			return switch (language) {
+				case VI -> new Words("Có", "Không", "(không có tiêu đề)");
+				case EN -> new Words("Yes", "No", "(untitled)");
+				case DE -> new Words("Ja", "Nein", "(ohne Titel)");
+			};
+		}
+	}
 
 	private TemplateEngine() {
 	}
@@ -47,18 +60,19 @@ public final class TemplateEngine {
 			List<String> subtasks, List<String> tags) {
 	}
 
-	public record Plan(List<PlannedTask> tasks, List<String> warnings) {
+	public record Plan(List<PlannedTask> tasks, List<Translatable> warnings) {
 	}
 
 	/** Giá trị đã chuẩn hoá (String hoặc Boolean) + lỗi theo mã trường. */
-	public record ValidatedValues(Map<String, Object> values, Map<String, String> errors) {
+	public record ValidatedValues(Map<String, Object> values, Map<String, Translatable> errors) {
 
 		public boolean hasErrors() {
 			return !errors.isEmpty();
 		}
 	}
 
-	private record Context(List<TemplateField> fields, Map<String, Object> values, ZoneId zone, Instant now) {
+	private record Context(List<TemplateField> fields, Map<String, Object> values, ZoneId zone, Instant now,
+			Words words) {
 
 		TemplateField field(String key) {
 			return fields.stream().filter(f -> f.key().equals(key)).findFirst().orElse(null);
@@ -68,7 +82,7 @@ public final class TemplateEngine {
 	/** Kiểm tra và chuẩn hoá dữ liệu người dùng điền vào form. */
 	public static ValidatedValues validateValues(List<TemplateField> fields, Map<String, ?> raw) {
 		var values = new LinkedHashMap<String, Object>();
-		var errors = new LinkedHashMap<String, String>();
+		var errors = new LinkedHashMap<String, Translatable>();
 
 		for (var field : fields) {
 			Object input = raw.get(field.key());
@@ -80,20 +94,20 @@ public final class TemplateEngine {
 			String v = input instanceof String s ? s.trim() : "";
 			if (v.isEmpty()) {
 				if (field.required()) {
-					errors.put(field.key(), "Bắt buộc");
+					errors.put(field.key(), Translatable.of("error.form.required"));
 				}
 				values.put(field.key(), "");
 				continue;
 			}
 			String error = switch (field.type()) {
-				case NUMBER -> isFiniteNumber(v) ? null : "Phải là số";
-				case DATE -> parseDate(v) != null ? null : "Ngày không hợp lệ";
-				case DATETIME -> parseDateTime(v) != null ? null : "Ngày giờ không hợp lệ";
-				case SELECT -> field.options().contains(v) ? null : "Lựa chọn không hợp lệ";
+				case NUMBER -> isFiniteNumber(v) ? null : "error.form.number";
+				case DATE -> parseDate(v) != null ? null : "error.form.date";
+				case DATETIME -> parseDateTime(v) != null ? null : "error.form.datetime";
+				case SELECT -> field.options().contains(v) ? null : "error.form.option";
 				default -> null;
 			};
 			if (error != null) {
-				errors.put(field.key(), error);
+				errors.put(field.key(), Translatable.of(error));
 			}
 			values.put(field.key(), v.length() > 2000 ? v.substring(0, 2000) : v);
 		}
@@ -102,23 +116,23 @@ public final class TemplateEngine {
 
 	/** Từ template + dữ liệu form đã kiểm tra → danh sách task sẽ tạo. */
 	public static Plan plan(List<TemplateField> fields, List<TemplateRule> rules, Map<String, Object> values,
-			ZoneId zone, Instant now) {
-		var ctx = new Context(fields, values, zone, now);
+			ZoneId zone, Instant now, Language language) {
+		var ctx = new Context(fields, values, zone, now, Words.of(language));
 		var tasks = new ArrayList<PlannedTask>();
-		var warnings = new ArrayList<String>();
+		var warnings = new ArrayList<Translatable>();
 
 		for (var rule : rules) {
 			if (!conditionMet(rule, values)) {
 				continue;
 			}
 			var rendered = render(rule.title(), ctx).trim();
-			var title = rendered.isEmpty() ? "(không có tiêu đề)" : rendered;
+			var title = rendered.isEmpty() ? ctx.words().untitled() : rendered;
 			var due = computeDue(rule, ctx);
 			if (due.missingAnchor()) {
-				warnings.add("\"%s\": chưa điền ngày làm mốc nên task không có hạn".formatted(title));
+				warnings.add(Translatable.of("template.warning.missingAnchor", title));
 			}
 			if (due.dueAt() != null && due.dueAt().isBefore(now)) {
-				warnings.add("\"%s\": hạn chót đã ở trong quá khứ".formatted(title));
+				warnings.add(Translatable.of("template.warning.pastDue", title));
 			}
 			var tags = new LinkedHashSet<String>();
 			rule.tags().stream().map(t -> render(t, ctx).trim()).filter(t -> !t.isEmpty()).forEach(tags::add);
@@ -133,8 +147,8 @@ public final class TemplateEngine {
 
 	/** Thay {@code {{biến}}} bằng giá trị đã điền; biến không có giá trị → chuỗi rỗng. */
 	public static String renderText(String template, List<TemplateField> fields, Map<String, Object> values,
-			ZoneId zone, Instant now) {
-		return render(template, new Context(fields, values, zone, now));
+			ZoneId zone, Instant now, Language language) {
+		return render(template, new Context(fields, values, zone, now, Words.of(language)));
 	}
 
 	/** Các biến đang dùng trong một chuỗi. */
@@ -156,19 +170,20 @@ public final class TemplateEngine {
 		return VARIABLE.matcher(template).replaceAll(match -> {
 			var key = match.group(1);
 			var field = ctx.field(key);
-			var value = field != null ? display(field, ctx.values().get(key), ctx.zone())
+			var value = field != null ? display(field, ctx.values().get(key), ctx)
 					: builtins.getOrDefault(key, "");
 			return Matcher.quoteReplacement(value);
 		});
 	}
 
-	private static String display(TemplateField field, Object value, ZoneId zone) {
+	private static String display(TemplateField field, Object value, Context ctx) {
 		if (value == null || "".equals(value)) {
 			return "";
 		}
 		if (value instanceof Boolean b) {
-			return b ? "Có" : "Không";
+			return b ? ctx.words().yes() : ctx.words().no();
 		}
+		var zone = ctx.zone();
 		var text = value.toString();
 		if (field.type() == FieldType.DATE) {
 			var date = parseDate(text);

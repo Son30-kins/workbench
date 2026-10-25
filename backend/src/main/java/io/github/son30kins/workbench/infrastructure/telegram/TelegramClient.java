@@ -5,8 +5,10 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import io.github.son30kins.workbench.application.config.WorkbenchProperties;
+import io.github.son30kins.workbench.application.i18n.Translator;
 import io.github.son30kins.workbench.application.port.TelegramGateway;
 
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -31,7 +33,10 @@ class TelegramClient implements TelegramGateway {
 
 	private final String appUrl;
 
-	TelegramClient(WorkbenchProperties properties, RestClient.Builder restClientBuilder) {
+	private final Translator translator;
+
+	TelegramClient(WorkbenchProperties properties, RestClient.Builder restClientBuilder, Translator translator) {
+		this.translator = translator;
 		this.token = properties.telegram().enabled() ? properties.telegram().botToken().trim() : null;
 		this.appUrl = properties.appBaseUrl();
 		if (token == null) {
@@ -63,10 +68,10 @@ class TelegramClient implements TelegramGateway {
 	}
 
 	@Override
-	public void sendHtml(String chatId, String html, String taskId) {
+	public void sendHtml(String chatId, String html, String taskId, Locale locale) {
 		try {
 			var response = api().sendMessage(new TelegramApi.SendMessage(chatId, html, "HTML",
-					new TelegramApi.LinkPreviewOptions(true), taskId == null ? null : taskKeyboard(taskId)));
+					new TelegramApi.LinkPreviewOptions(true), taskId == null ? null : taskKeyboard(taskId, locale)));
 			if (!response.ok()) {
 				throw new TelegramException("Telegram từ chối tin nhắn: " + response.description());
 			}
@@ -79,15 +84,20 @@ class TelegramClient implements TelegramGateway {
 		}
 	}
 
-	private TelegramApi.InlineKeyboardMarkup taskKeyboard(String taskId) {
+	private TelegramApi.InlineKeyboardMarkup taskKeyboard(String taskId, Locale locale) {
 		var rows = new ArrayList<List<TelegramApi.InlineKeyboardButton>>();
-		rows.add(List.of(new TelegramApi.InlineKeyboardButton("✅ Xong", "done:" + taskId, null),
-				new TelegramApi.InlineKeyboardButton("⏰ 1 giờ", "s1h:" + taskId, null),
-				new TelegramApi.InlineKeyboardButton("📅 Mai", "stm:" + taskId, null)));
+		rows.add(List.of(button(locale, "telegram.key.done", "done:" + taskId),
+				button(locale, "telegram.key.hour", "s1h:" + taskId),
+				button(locale, "telegram.key.tomorrow", "stm:" + taskId)));
 		if (isPublicUrl(appUrl)) {
-			rows.add(List.of(new TelegramApi.InlineKeyboardButton("🔗 Mở trong app", null, appUrl + "/?task=" + taskId)));
+			rows.add(List.of(new TelegramApi.InlineKeyboardButton(translator.get(locale, "telegram.key.open"), null,
+					appUrl + "/?task=" + taskId)));
 		}
 		return new TelegramApi.InlineKeyboardMarkup(rows);
+	}
+
+	private TelegramApi.InlineKeyboardButton button(Locale locale, String code, String callbackData) {
+		return new TelegramApi.InlineKeyboardButton(translator.get(locale, code), callbackData, null);
 	}
 
 	/** Thông điệp lỗi đã xoá token. */

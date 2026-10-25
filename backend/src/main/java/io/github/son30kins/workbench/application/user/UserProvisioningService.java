@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import io.github.son30kins.workbench.application.config.WorkbenchProperties;
 import io.github.son30kins.workbench.application.setting.AppSettingsService;
 import io.github.son30kins.workbench.application.template.TemplateService;
+import io.github.son30kins.workbench.domain.shared.Language;
 import io.github.son30kins.workbench.domain.user.Role;
 import io.github.son30kins.workbench.domain.user.User;
 import io.github.son30kins.workbench.domain.user.UserRepository;
@@ -25,9 +26,12 @@ public class UserProvisioningService {
 
 	private final WorkbenchProperties properties;
 
-	/** @throws LoginRejectedException khi không được phép đăng nhập */
+	/**
+	 * @param language ngôn ngữ đang hiển thị lúc đăng nhập — dùng cho tài khoản mới (và form mẫu mặc định)
+	 * @throws LoginRejectedException khi không được phép đăng nhập
+	 */
 	@Transactional
-	public User provision(GoogleProfile google) {
+	public User provision(GoogleProfile google, Language language) {
 		if (!google.emailVerified()) {
 			throw new LoginRejectedException("EMAIL_NOT_VERIFIED", "Email Google chưa được xác minh");
 		}
@@ -56,8 +60,8 @@ public class UserProvisioningService {
 
 		// Người đăng nhập đầu tiên của bản cài là admin
 		var user = users.save(new User(google.subject(), google.email(), google.displayName(), google.picture(),
-				firstUser ? Role.ADMIN : Role.USER, properties.defaultTimezone()));
-		templates.seedDefaults(user.getId());
+				firstUser ? Role.ADMIN : Role.USER, properties.defaultTimezone(), language));
+		templates.seedDefaults(user.getId(), language);
 		return user;
 	}
 

@@ -26,7 +26,7 @@ Từ v0.2.0 Workbench gồm **2 dịch vụ**: backend **Spring Boot 4** (Java 2
                      ┌──────────────────────────────┐        ┌────────────────────────────────────┐
 ┌──────────────┐     │ web — Next.js (cổng 3000)    │  HTTP  │ api — Spring Boot (cổng 8080)      │     ┌────────────┐
 │  Trình duyệt │◄───►│ - trang + Server Actions     ├───────►│ - REST /api/** (cookie phiên)      │◄───►│ PostgreSQL │
-└──────▲───────┘     │ - rewrite /api/auth/** ──────┼───────►│ - Spring Security + Google OIDC    │     └────────────┘
+└──────▲───────┘     │ - chuyển tiếp /api/auth/** ──┼───────►│ - Spring Security + Google OIDC    │     └────────────┘
        │             └──────────────────────────────┘        │ - @Scheduled: nhắc việc, bản tin   │
        ▼                                                     │ - bot Telegram (long polling)      │◄───► Telegram
    Google OAuth ◄────────────────────────────────────────────┤                                    │
@@ -76,7 +76,7 @@ workbench/
 │   │   ├── application/             use case (@Service @Transactional), port ra ngoài
 │   │   ├── infrastructure/          JPA adapter, security, telegram, scheduling, config
 │   │   └── interfaces/rest/         controller, DTO, xử lý lỗi
-│   ├── src/main/resources/          application.yml, db/migration (Flyway)
+│   ├── src/main/resources/          application.yml, db/migration (Flyway), messages*.properties (vi/en/de)
 │   ├── src/test/java/               JUnit + Testcontainers
 │   └── Dockerfile
 ├── frontend/                        Next.js
@@ -84,7 +84,8 @@ workbench/
 │   ├── src/actions/                 Server Actions → gọi API
 │   ├── src/server/                  client API (chỉ chạy phía server), session, queries
 │   ├── src/components/              UI: shell, tasks, templates, settings, admin
-│   ├── src/core/                    nhãn, định dạng ngày giờ, kiểu form mẫu (dùng cho UI)
+│   ├── src/core/                    thứ tự ưu tiên, định dạng ngày giờ, kiểu form mẫu (dùng cho UI)
+│   ├── src/i18n/                    đa ngôn ngữ: từ điển vi/en/de, chọn ngôn ngữ (tài khoản → cookie → trình duyệt)
 │   └── Dockerfile, docker-entrypoint.sh, docker/build-keys.mjs
 ├── docker-compose.yml               cài đặt cho người dùng (web + api + db + caddy)
 ├── docker-compose.dev.yml           Postgres cho dev

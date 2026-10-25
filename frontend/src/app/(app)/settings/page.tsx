@@ -1,28 +1,43 @@
 import type { Metadata } from "next";
 import { PreferencesForm } from "@/components/settings/preferences-form";
+import { LanguagePills } from "@/components/language-switcher";
 import { TelegramCard } from "@/components/settings/telegram-card";
 import { Avatar } from "@/components/shell/header";
 import { Card, PageHeader } from "@/components/ui";
+import { getI18n } from "@/i18n/server";
 import { getTelegramStatus } from "@/server/queries";
 import { requireUser } from "@/server/session";
 
-export const metadata: Metadata = { title: "Cài đặt" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t.meta.settings };
+}
 
 export default async function SettingsPage() {
   const user = await requireUser();
-  const telegram = await getTelegramStatus();
+  const [telegram, { t }] = await Promise.all([getTelegramStatus(), getI18n()]);
+  const st = t.settings;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <PageHeader title="Cài đặt" description="Tài khoản, kênh nhận nhắc việc và lịch nhắc của riêng bạn." />
+      <PageHeader title={st.title} description={st.description} />
 
       <Card className="flex items-center gap-4 p-6">
         <Avatar name={user.name} image={user.image} size={56} />
         <div className="min-w-0">
           <p className="truncate text-lg font-bold">{user.name}</p>
-          <p className="truncate text-sm text-fg-2">{user.email} · đăng nhập bằng Google</p>
-          {user.role === "ADMIN" && <p className="mt-1 text-xs font-semibold text-brand">Quản trị viên</p>}
+          <p className="truncate text-sm text-fg-2">
+            {user.email} · {st.signedInWithGoogle}
+          </p>
+          {user.role === "ADMIN" && <p className="mt-1 text-xs font-semibold text-brand">{st.administrator}</p>}
         </div>
+      </Card>
+
+      <Card className="space-y-4 p-6">
+        <div>
+          <h2 className="text-lg font-bold">{st.languageTitle}</h2>
+          <p className="text-sm text-fg-2">{st.languageHint}</p>
+        </div>
+        <LanguagePills />
       </Card>
 
       <TelegramCard

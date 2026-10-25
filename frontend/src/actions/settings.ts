@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { UserSettings } from "@/core/user-settings";
+import { getI18n } from "@/i18n/server";
 import { apiSend, SESSION_COOKIE } from "@/server/api";
 
 export type SimpleResult = { ok: true; message?: string } | { ok: false; error: string };
@@ -12,7 +13,7 @@ export async function savePreferencesAction(input: { timezone: string; settings:
   const res = await apiSend("PUT", "/api/me/preferences", input);
   if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath("/", "layout");
-  return { ok: true, message: "Đã lưu — lịch nhắc của các task đang mở đã được tính lại" };
+  return { ok: true, message: (await getI18n()).t.settings.savedRescheduled };
 }
 
 /** Tạo link t.me/<bot>?start=<mã> để người dùng bấm Start trong Telegram. */

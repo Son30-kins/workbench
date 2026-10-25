@@ -3,11 +3,14 @@
 import { useMemo, useState, useTransition } from "react";
 import { savePreferencesAction } from "@/actions/settings";
 import { Button, Card, Field, Input, Notice, Select } from "@/components/ui";
-import { PRIORITIES, PRIORITY_LABEL, type PriorityValue } from "@/core/priority";
-import { REMINDER_OFFSET_CHOICES, type UserSettings } from "@/core/user-settings";
+import { PRIORITIES, type PriorityValue } from "@/core/priority";
+import { formatOffset, REMINDER_OFFSET_CHOICES, type UserSettings } from "@/core/user-settings";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 
 export function PreferencesForm({ timezone, settings }: { timezone: string; settings: UserSettings }) {
+  const { t } = useI18n();
+  const st = t.settings;
   const [tz, setTz] = useState(timezone);
   const [s, setS] = useState<UserSettings>(settings);
   const [notice, setNotice] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
@@ -29,7 +32,7 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
   function save() {
     startTransition(async () => {
       const res = await savePreferencesAction({ timezone: tz, settings: s });
-      setNotice(res.ok ? { tone: "success", text: res.message ?? "Đã lưu" } : { tone: "danger", text: res.error });
+      setNotice(res.ok ? { tone: "success", text: res.message ?? t.common.saved } : { tone: "danger", text: res.error });
     });
   }
 
@@ -37,38 +40,38 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
     <>
       <Card className="space-y-5 p-6">
         <div>
-          <h2 className="text-lg font-bold">Lịch nhắc theo mức ưu tiên</h2>
-          <p className="text-sm text-fg-2">Chọn các mốc nhắc trước hạn chót. Ngoài ra app luôn nhắc khi task vừa quá hạn.</p>
+          <h2 className="text-lg font-bold">{st.remindersTitle}</h2>
+          <p className="text-sm text-fg-2">{st.remindersHint}</p>
         </div>
         {PRIORITIES.map((p) => (
           <div key={p} className="space-y-2">
-            <p className="text-sm font-semibold">{PRIORITY_LABEL[p]}</p>
+            <p className="text-sm font-semibold">{t.priority[p]}</p>
             <div className="flex flex-wrap gap-1.5">
-              {REMINDER_OFFSET_CHOICES.map((c) => {
-                const on = s.reminderOffsets[p].includes(c.minutes);
+              {REMINDER_OFFSET_CHOICES.map((minutes) => {
+                const on = s.reminderOffsets[p].includes(minutes);
                 return (
                   <button
-                    key={c.minutes}
+                    key={minutes}
                     type="button"
                     aria-pressed={on}
-                    onClick={() => toggleOffset(p, c.minutes)}
+                    onClick={() => toggleOffset(p, minutes)}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                       on ? "border-transparent bg-primary text-on-primary" : "border-line-strong text-fg-2 hover:text-fg",
                     )}
                   >
-                    {c.label}
+                    {formatOffset(minutes, t.offsets)}
                   </button>
                 );
               })}
             </div>
           </div>
         ))}
-        <Field label="Nhắc lại khi quá hạn mỗi" className="max-w-xs">
+        <Field label={st.overdueRepeat} className="max-w-xs">
           <Select value={s.overdueRepeatHours} onChange={(e) => setS({ ...s, overdueRepeatHours: Number(e.target.value) })}>
             {[4, 8, 12, 24, 48].map((h) => (
               <option key={h} value={h}>
-                {h} giờ
+                {st.hours(h)}
               </option>
             ))}
           </Select>
@@ -76,8 +79,8 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
       </Card>
 
       <Card className="space-y-5 p-6">
-        <h2 className="text-lg font-bold">Thời gian</h2>
-        <Field label="Múi giờ" className="max-w-md">
+        <h2 className="text-lg font-bold">{st.timeTitle}</h2>
+        <Field label={st.timezone} className="max-w-md">
           <Select value={tz} onChange={(e) => setTz(e.target.value)}>
             {zones.map((z) => (
               <option key={z} value={z}>
@@ -95,14 +98,14 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
               onChange={(e) => setS({ ...s, quietHours: { ...s.quietHours, enabled: e.target.checked } })}
               className="h-4 w-4"
             />
-            Giờ yên lặng — không nhắc trong khoảng này (trừ task Khẩn cấp)
+            {st.quietHours}
           </label>
           {s.quietHours.enabled && (
             <div className="flex max-w-sm gap-3">
-              <Field label="Từ" className="flex-1">
+              <Field label={st.from} className="flex-1">
                 <Input type="time" value={s.quietHours.start} onChange={(e) => setS({ ...s, quietHours: { ...s.quietHours, start: e.target.value } })} />
               </Field>
-              <Field label="Đến" className="flex-1">
+              <Field label={st.to} className="flex-1">
                 <Input type="time" value={s.quietHours.end} onChange={(e) => setS({ ...s, quietHours: { ...s.quietHours, end: e.target.value } })} />
               </Field>
             </div>
@@ -117,10 +120,10 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
               onChange={(e) => setS({ ...s, digest: { ...s.digest, enabled: e.target.checked } })}
               className="h-4 w-4"
             />
-            Bản tin buổi sáng — tóm tắt việc hôm nay và việc quá hạn
+            {st.digest}
           </label>
           {s.digest.enabled && (
-            <Field label="Gửi lúc" className="max-w-[10rem]">
+            <Field label={st.digestAt} className="max-w-[10rem]">
               <Input type="time" value={s.digest.time} onChange={(e) => setS({ ...s, digest: { ...s.digest, time: e.target.value } })} />
             </Field>
           )}
@@ -130,7 +133,7 @@ export function PreferencesForm({ timezone, settings }: { timezone: string; sett
       {notice && <Notice tone={notice.tone}>{notice.text}</Notice>}
       <div className="flex justify-end">
         <Button onClick={save} disabled={pending}>
-          {pending ? "Đang lưu…" : "Lưu cài đặt"}
+          {pending ? t.common.saving : st.save}
         </Button>
       </div>
     </>

@@ -13,11 +13,12 @@ public record TemplatePreviewResponse(List<PlannedTask> tasks, List<String> warn
 			List<String> subtasks, List<String> tags) {
 	}
 
-	public static TemplatePreviewResponse from(TemplateEngine.Plan plan) {
+	/** @param warnings cảnh báo đã dịch sang ngôn ngữ người dùng */
+	public static TemplatePreviewResponse from(TemplateEngine.Plan plan, List<String> warnings) {
 		return new TemplatePreviewResponse(plan.tasks()
 			.stream()
 			.map(t -> new PlannedTask(t.title(), t.description(), t.priority(), t.dueAt(), t.subtasks(), t.tags()))
-			.toList(), plan.warnings());
+			.toList(), warnings);
 	}
 
 }

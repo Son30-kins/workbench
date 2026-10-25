@@ -1,8 +1,11 @@
 // Client gọi Workbench API (Spring Boot) từ PHÍA SERVER của Next.js — trình duyệt không gọi API trực tiếp.
-// Chuyển tiếp cookie phiên WORKBENCH_SESSION và gửi kèm X-Requested-By (API dùng header này chống CSRF).
+// Chuyển tiếp cookie phiên WORKBENCH_SESSION, gửi kèm X-Requested-By (API dùng header này chống CSRF) và
+// Accept-Language theo ngôn ngữ đang chọn (API trả thông báo lỗi đúng ngôn ngữ).
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getMessages } from "@/i18n";
+import { requestLocale } from "@/i18n/request";
 
 export const SESSION_COOKIE = "WORKBENCH_SESSION";
 
@@ -23,7 +26,11 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiFailur
 
 async function call(method: string, path: string, body?: unknown): Promise<Response> {
   const session = (await cookies()).get(SESSION_COOKIE)?.value;
-  const headers: Record<string, string> = { accept: "application/json", "x-requested-by": "workbench-web" };
+  const headers: Record<string, string> = {
+    accept: "application/json",
+    "accept-language": await requestLocale(),
+    "x-requested-by": "workbench-web",
+  };
   if (body !== undefined) headers["content-type"] = "application/json";
   if (session) headers.cookie = `${SESSION_COOKIE}=${session}`;
   return fetch(`${API_URL}${path}`, {
@@ -42,7 +49,7 @@ async function failure(res: Response): Promise<ApiFailure> {
   };
   return {
     status: res.status,
-    message: problem.detail ?? "Có lỗi xảy ra, thử lại sau",
+    message: problem.detail ?? getMessages(await requestLocale()).common.genericError,
     errors: problem.errors ?? [],
     fieldErrors: problem.fieldErrors ?? {},
   };

@@ -48,7 +48,12 @@ public final class TimeZones {
 	}
 
 	public static String format(Instant instant, ZoneId zone, String pattern) {
-		return DateTimeFormatter.ofPattern(pattern, VI).format(instant.atZone(zone));
+		return format(instant, zone, pattern, VI);
+	}
+
+	/** Định dạng theo ngôn ngữ — tên thứ, tháng ("Montag", "Monday", "Thứ Hai"). */
+	public static String format(Instant instant, ZoneId zone, String pattern, Locale locale) {
+		return DateTimeFormatter.ofPattern(pattern, locale).format(instant.atZone(zone));
 	}
 
 	public static boolean isValidZone(String zone) {

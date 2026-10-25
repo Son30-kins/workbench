@@ -3,6 +3,7 @@ package io.github.son30kins.workbench.application.reminder;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,8 @@ public class ReminderDeliveryService {
 
 	private final TelegramNotificationService telegram;
 
+	private final MessageFormatter formatter;
+
 	private final TransactionTemplate tx;
 
 	private final Clock clock;
@@ -63,7 +66,7 @@ public class ReminderDeliveryService {
 		return claimed.size();
 	}
 
-	private record Delivery(UUID userId, UUID taskId, String html) {
+	private record Delivery(UUID userId, UUID taskId, String html, Locale locale) {
 	}
 
 	private void deliver(Reminder reminder, Instant now) {
@@ -74,19 +77,20 @@ public class ReminderDeliveryService {
 			if (task == null || user == null || user.isBanned() || !task.isOpen()) {
 				return null;
 			}
-			var message = MessageFormatter.reminder(task, reminder.getKind(), user.getZone(), now);
+			var locale = user.getLanguage().locale();
+			var message = formatter.reminder(task, reminder.getKind(), user.getZone(), now, locale);
 			notifications.add(user.getId(), task.getId(), message.title(), message.body());
 			if (reminder.getKind() == ReminderKind.OVERDUE) {
 				var next = ReminderSchedule.nextOverdue(reminder.getFireAt(), user.getEffectiveSettings(), user.getZone(),
 						now);
 				reminders.save(new Reminder(task.getId(), user.getId(), ReminderKind.OVERDUE, next));
 			}
-			return new Delivery(user.getId(), task.getId(), message.html());
+			return new Delivery(user.getId(), task.getId(), message.html(), locale);
 		});
 		// 3) Gửi Telegram ngoài transaction — không giữ kết nối DB trong lúc chờ mạng
 		if (delivery != null) {
 			try {
-				telegram.sendTo(delivery.userId(), delivery.html(), delivery.taskId());
+				telegram.sendTo(delivery.userId(), delivery.html(), delivery.taskId(), delivery.locale());
 			}
 			catch (RuntimeException ex) {
 				tx.executeWithoutResult(status -> reminders.recordError(reminder.getId(), truncate(ex.getMessage())));

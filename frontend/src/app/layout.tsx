@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { I18nProvider } from "@/i18n/provider";
+import { getI18n } from "@/i18n/server";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -9,10 +11,10 @@ const nunito = Nunito({
   weight: ["400", "500", "600", "700", "800"],
 });
 
-export const metadata: Metadata = {
-  title: { default: "Workbench", template: "%s · Workbench" },
-  description: "Quản lý công việc: form mẫu tự sinh task, ưu tiên, nhắc việc qua Telegram.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: { default: "Workbench", template: "%s · Workbench" }, description: t.meta.description };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -21,11 +23,14 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale } = await getI18n();
   return (
-    <html lang="vi" suppressHydrationWarning className={`${nunito.variable} h-full antialiased`}>
+    <html lang={locale} suppressHydrationWarning className={`${nunito.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <ThemeProvider>{children}</ThemeProvider>
+        <I18nProvider locale={locale}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );

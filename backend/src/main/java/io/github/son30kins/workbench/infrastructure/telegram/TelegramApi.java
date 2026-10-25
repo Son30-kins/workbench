@@ -60,7 +60,7 @@ interface TelegramApi {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	record From(long id, String username) {
+	record From(long id, String username, @JsonProperty("language_code") String languageCode) {
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
@@ -98,7 +98,8 @@ interface TelegramApi {
 	record EditMessageReplyMarkup(@JsonProperty("chat_id") String chatId, @JsonProperty("message_id") long messageId) {
 	}
 
-	record SetMyCommands(List<BotCommand> commands) {
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	record SetMyCommands(List<BotCommand> commands, @JsonProperty("language_code") String languageCode) {
 	}
 
 	record BotCommand(String command, String description) {

@@ -6,18 +6,15 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { PeekingCat } from "@/components/cats";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 
 type Counts = { all: number; today: number; overdue: number; week: number };
 
-const FILTERS = [
-  { view: "all", label: "Tất cả việc đang mở", key: "all" },
-  { view: "today", label: "Hôm nay", key: "today" },
-  { view: "overdue", label: "Quá hạn", key: "overdue" },
-  { view: "week", label: "7 ngày tới", key: "week" },
-] as const;
+const FILTERS = ["all", "today", "overdue", "week"] as const;
 
 export function Panel({ counts, templates }: { counts: Counts; templates: { id: string; name: string }[] }) {
+  const { t } = useI18n();
   const pathname = usePathname();
   const params = useSearchParams();
   const base = pathname === "/list" ? "/list" : "/";
@@ -26,11 +23,11 @@ export function Panel({ counts, templates }: { counts: Counts; templates: { id: 
   return (
     <aside className="sticky top-0 hidden h-screen w-[300px] shrink-0 flex-col border-r border-line bg-panel px-7 py-8 xl:flex">
       <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-3xl font-bold">Công việc</h2>
+        <h2 className="text-3xl font-bold">{t.panel.title}</h2>
         <Link
           href="/templates/new"
-          aria-label="Tạo form mẫu"
-          title="Tạo form mẫu"
+          aria-label={t.panel.newTemplate}
+          title={t.panel.newTemplate}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-hover text-fg-2 transition hover:text-fg"
         >
           <Plus size={16} />
@@ -38,21 +35,21 @@ export function Panel({ counts, templates }: { counts: Counts; templates: { id: 
       </div>
 
       <div className="flex-1 space-y-7 overflow-y-auto thin-scroll">
-        <Section title="Bộ lọc">
-          {FILTERS.map((f) => (
+        <Section title={t.panel.filters}>
+          {FILTERS.map((view) => (
             <TreeLink
-              key={f.view}
-              href={f.view === "all" ? base : `${base}?view=${f.view}`}
-              active={currentView === f.view}
-              tone={f.view === "overdue" && counts.overdue > 0 ? "danger" : undefined}
+              key={view}
+              href={view === "all" ? base : `${base}?view=${view}`}
+              active={currentView === view}
+              tone={view === "overdue" && counts.overdue > 0 ? "danger" : undefined}
             >
-              {f.label} ({counts[f.key]})
+              {t.views[view]} ({counts[view]})
             </TreeLink>
           ))}
         </Section>
 
-        <Section title="Form mẫu">
-          {templates.length === 0 && <p className="pl-10 text-sm text-fg-2">Chưa có form mẫu</p>}
+        <Section title={t.panel.templates}>
+          {templates.length === 0 && <p className="pl-10 text-sm text-fg-2">{t.panel.noTemplates}</p>}
           {templates.map((t) => (
             <TreeLink key={t.id} href={`/templates/${t.id}/run`} active={pathname === `/templates/${t.id}/run`}>
               {t.name}
@@ -60,7 +57,7 @@ export function Panel({ counts, templates }: { counts: Counts; templates: { id: 
           ))}
           <TreeLink href="/templates/new" active={pathname === "/templates/new"}>
             <span className="inline-flex items-center gap-1.5 text-brand">
-              <Plus size={14} /> Tạo form mẫu
+              <Plus size={14} /> {t.panel.newTemplate}
             </span>
           </TreeLink>
         </Section>
@@ -118,6 +115,7 @@ function TreeLink({
 }
 
 export function ThemeSwitch() {
+  const { t } = useI18n();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- chỉ biết theme sau khi mount
@@ -142,8 +140,8 @@ export function ThemeSwitch() {
   return (
     <div className="relative mt-16 flex rounded-full bg-hover p-1">
       <PeekingCat className="pointer-events-none absolute -top-[52px] left-1/2 w-24 -translate-x-1/2" />
-      {item(false, <Sun size={16} />, "Sáng")}
-      {item(true, <Moon size={16} />, "Tối")}
+      {item(false, <Sun size={16} />, t.panel.light)}
+      {item(true, <Moon size={16} />, t.panel.dark)}
     </div>
   );
 }

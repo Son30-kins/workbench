@@ -33,7 +33,7 @@ class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver, WebM
 			NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
 		var user = webRequest.getAttribute(CurrentUser.REQUEST_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 		if (user == null) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Chưa đăng nhập");
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "error.unauthorized");
 		}
 		return user;
 	}

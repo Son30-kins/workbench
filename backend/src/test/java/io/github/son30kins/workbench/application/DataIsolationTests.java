@@ -59,7 +59,7 @@ class DataIsolationTests {
 	void bKhongThayKhongSuaKhongChayDuocTemplateCuaA() {
 		var a = fixtures.context(Role.USER);
 		var b = fixtures.context(Role.USER);
-		templates.seedDefaults(a.id());
+		templates.seedDefaults(a.id(), a.language());
 		var quick = templates.list(a.id()).stream().filter(t -> t.getName().equals("Việc nhanh")).findFirst().orElseThrow();
 
 		assertThat(templates.get(b.id(), quick.getId())).isEmpty();
@@ -67,7 +67,7 @@ class DataIsolationTests {
 		assertThat(templates.update(b.id(), quick.getId(), quick.toDefinition())).isEmpty();
 		assertThat(templates.run(b, quick.getId(), Map.of("viec", "x"))).isEmpty();
 		assertThat(templates.preview(b, quick.getId(), Map.of("viec", "x"))).isEmpty();
-		assertThat(templates.duplicate(b.id(), quick.getId())).isEmpty();
+		assertThat(templates.duplicate(b, quick.getId())).isEmpty();
 		assertThat(templates.delete(b.id(), quick.getId())).isFalse();
 		assertThat(templates.get(a.id(), quick.getId()).orElseThrow().getName()).isEqualTo("Việc nhanh");
 	}
@@ -75,7 +75,7 @@ class DataIsolationTests {
 	@Test
 	void chayFormMauTaoTaskVaLuuJsonbDung() {
 		var a = fixtures.context(Role.USER);
-		templates.seedDefaults(a.id());
+		templates.seedDefaults(a.id(), a.language());
 		var report = templates.list(a.id()).stream().filter(t -> t.getName().equals("Báo cáo tuần")).findFirst().orElseThrow();
 		// Đọc lại từ DB: fields/rules (jsonb) giữ nguyên kiểu record
 		assertThat(templates.get(a.id(), report.getId()).orElseThrow().getRules().getFirst().due().time()).isEqualTo("17:00");

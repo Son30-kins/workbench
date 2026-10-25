@@ -82,12 +82,12 @@ class AdminController {
 		var domains = normalize(request.allowedDomains()).stream().map(d -> d.replaceFirst("^@", "")).toList();
 		for (var email : emails) {
 			if (!EMAIL.matcher(email).matches()) {
-				throw new DomainException("Email không hợp lệ: " + email);
+				throw new DomainException("error.admin.invalidEmail", email);
 			}
 		}
 		for (var domain : domains) {
 			if (!DOMAIN.matcher(domain).matches()) {
-				throw new DomainException("Tên miền không hợp lệ: " + domain);
+				throw new DomainException("error.admin.invalidDomain", domain);
 			}
 		}
 		var policy = new AccessPolicy(emails, domains, request.registrationOpen());

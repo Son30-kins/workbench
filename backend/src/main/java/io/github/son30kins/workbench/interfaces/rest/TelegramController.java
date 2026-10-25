@@ -2,6 +2,7 @@ package io.github.son30kins.workbench.interfaces.rest;
 
 import lombok.RequiredArgsConstructor;
 
+import io.github.son30kins.workbench.application.i18n.Translator;
 import io.github.son30kins.workbench.application.notification.MessageFormatter;
 import io.github.son30kins.workbench.application.port.TelegramGateway;
 import io.github.son30kins.workbench.application.setting.AppSettingsService;
@@ -33,6 +34,8 @@ class TelegramController {
 
 	private final AppSettingsService appSettings;
 
+	private final Translator translator;
+
 	@GetMapping
 	TelegramStatusResponse status(CurrentUser user) {
 		var channel = links.status(user.id());
@@ -44,10 +47,10 @@ class TelegramController {
 	@PostMapping("/link")
 	LinkResponse createLink(CurrentUser user) {
 		if (!notifier.botConfigured()) {
-			throw new DomainException("Bản cài này chưa cấu hình Telegram bot. Báo admin thêm TELEGRAM_BOT_TOKEN vào .env.");
+			throw new DomainException("error.telegram.notConfigured");
 		}
 		var bot = appSettings.telegramBotUsername()
-			.orElseThrow(() -> new DomainException("Không kết nối được bot Telegram. Kiểm tra lại token."));
+			.orElseThrow(() -> new DomainException("error.telegram.unreachable"));
 		return new LinkResponse("https://t.me/" + bot + "?start=" + links.createLinkToken(user.id()));
 	}
 
@@ -59,19 +62,19 @@ class TelegramController {
 
 	@PostMapping("/test")
 	MessageResponse sendTest(CurrentUser user) {
-		var html = "🔔 <b>Tin nhắn thử</b>\nTài khoản <i>%s</i> sẽ nhận nhắc việc tại đây."
-			.formatted(MessageFormatter.escapeHtml(user.email()));
+		var locale = user.language().locale();
+		var html = translator.get(locale, "telegram.test", MessageFormatter.escapeHtml(user.email()));
 		boolean sent;
 		try {
-			sent = notifier.sendTo(user.id(), html, null);
+			sent = notifier.sendTo(user.id(), html, null, locale);
 		}
 		catch (TelegramGateway.TelegramException ex) {
-			throw new DomainException("Gửi thất bại");
+			throw new DomainException("error.telegram.sendFailed");
 		}
 		if (!sent) {
-			throw new DomainException("Chưa kết nối Telegram");
+			throw new DomainException("error.telegram.notLinked");
 		}
-		return new MessageResponse("Đã gửi — kiểm tra Telegram");
+		return new MessageResponse(translator.get(locale, "telegram.testSent"));
 	}
 
 }

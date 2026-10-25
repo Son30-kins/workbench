@@ -8,7 +8,7 @@ public class ValidationException extends DomainException {
 	private final List<Violation> violations;
 
 	public ValidationException(List<Violation> violations) {
-		super(violations.isEmpty() ? "Dữ liệu không hợp lệ" : violations.getFirst().message());
+		super(violations.isEmpty() ? Translatable.of("error.validation") : violations.getFirst().message());
 		this.violations = List.copyOf(violations);
 	}
 

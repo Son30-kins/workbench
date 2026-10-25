@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import io.github.son30kins.workbench.application.user.UserService;
 import io.github.son30kins.workbench.infrastructure.security.CurrentUser;
+import io.github.son30kins.workbench.interfaces.rest.dto.request.LanguageRequest;
 import io.github.son30kins.workbench.interfaces.rest.dto.request.PreferencesRequest;
 import io.github.son30kins.workbench.interfaces.rest.dto.response.MeResponse;
 
@@ -31,6 +32,12 @@ class MeController {
 	@PutMapping("/preferences")
 	MeResponse updatePreferences(CurrentUser user, @Valid @RequestBody PreferencesRequest request) {
 		return MeResponse.from(users.updatePreferences(user.id(), request.timezone(), request.settings()));
+	}
+
+	/** Ngôn ngữ giao diện, thông báo và tin Telegram. */
+	@PutMapping("/language")
+	MeResponse changeLanguage(CurrentUser user, @Valid @RequestBody LanguageRequest request) {
+		return MeResponse.from(users.changeLanguage(user.id(), request.language()));
 	}
 
 }

@@ -18,7 +18,7 @@ import io.github.son30kins.workbench.domain.task.TaskStatus;
  * Body tạo / sửa task. {@code due} là giờ trên đồng hồ của người dùng ("2026-10-31T17:00") —
  * server đổi sang thời điểm theo múi giờ trong cài đặt của họ.
  */
-public record TaskRequest(@NotBlank(message = "Nhập tiêu đề") @Size(max = 200) String title,
+public record TaskRequest(@NotBlank(message = "{validation.task.title}") @Size(max = 200) String title,
 		@Size(max = 5000) String description, LocalDateTime due, @NotNull Priority priority, @NotNull TaskStatus status,
 		@Size(max = 10) List<@NotNull @Size(max = 40) String> tags,
 		@Size(max = 50) List<@Valid @NotNull SubtaskItem> subtasks) {

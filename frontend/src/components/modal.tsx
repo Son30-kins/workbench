@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 
 /** Hộp thoại dùng <dialog> gốc của trình duyệt (có sẵn focus trap, phím Esc). */
@@ -18,6 +19,7 @@ export function Modal({
   children: React.ReactNode;
   className?: string;
 }) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export function Modal({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Đóng"
+              aria-label={t.common.close}
               className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-hover"
             >
               <X size={18} />

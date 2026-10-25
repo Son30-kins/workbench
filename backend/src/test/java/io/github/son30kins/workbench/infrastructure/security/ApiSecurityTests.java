@@ -26,7 +26,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 /** Kiểm tra lớp bảo mật qua HTTP thật (MockMvc): đăng nhập, phân quyền admin, header chống CSRF, khoá tài khoản. */
 @IntegrationTest
 @AutoConfigureMockMvc
-class ApiSecurityTests {
+public class ApiSecurityTests {
 
 	@Autowired
 	MockMvcTester mvc;
@@ -38,7 +38,7 @@ class ApiSecurityTests {
 	UserRepository users;
 
 	/** Giả lập phiên đăng nhập Google của {@code user}. */
-	static RequestPostProcessor loggedIn(User user) {
+	public static RequestPostProcessor loggedIn(User user) {
 		var idToken = new OidcIdToken("token", Instant.now(), Instant.now().plusSeconds(3600),
 				Map.of("sub", user.getGoogleSubject(), "email", user.getEmail()));
 		var principal = new WorkbenchOidcUser(user.getId(), List.of(new SimpleGrantedAuthority(Role.USER.authority())),
