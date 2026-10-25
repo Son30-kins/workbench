@@ -87,7 +87,8 @@ export function Board({ tasks, tz, now, openTask }: { tasks: TaskDTO[]; tz: stri
           {error}
         </p>
       )}
-      <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
+      {/* id cố định → aria id của dnd-kit giống nhau giữa server và client (tránh lỗi hydration) */}
+      <DndContext id="board" sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
         <div className="grid gap-5 lg:grid-cols-3">
           {BOARD_STATUSES.map((status) => (
             <Column key={status} status={status} count={columns[status].length} onAdd={() => openNew(status)}>
