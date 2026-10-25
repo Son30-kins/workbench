@@ -145,6 +145,59 @@ export function CatInBox({ className }: { className?: string }) {
   );
 }
 
+/** Một chân, xoay quanh đỉnh khi đi (CSS .cat-leg trong globals.css). */
+function Leg({ x, y, far, phase }: { x: number; y: number; far?: boolean; phase: "a" | "b" }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect className={`cat-leg cat-leg-${phase}`} x="-4" y="0" width="8" height="21" rx="4" fill={far ? STRIPE : FUR} {...outline} />
+    </g>
+  );
+}
+
+/**
+ * Mèo nhìn ngang, mặt quay sang trái — dùng cho mèo nhắc việc. Thêm class `walking` để bốn chân bước và thân nhún;
+ * đuôi luôn vẫy nhẹ. Lật sang phải bằng scaleX(-1) ở thẻ bọc ngoài.
+ */
+export function WalkingCat({ className, walking }: { className?: string; walking?: boolean }) {
+  return (
+    <svg viewBox="0 0 120 84" className={cn(walking && "walking", className)} aria-hidden>
+      <ellipse cx="62" cy="80" rx="34" ry="3" fill={INK} opacity="0.1" />
+      {/* Hai chân phía xa (sau thân) */}
+      <Leg x={48} y={57} far phase="b" />
+      <Leg x={82} y={57} far phase="a" />
+      <g className="cat-bob">
+        <g className="cat-tail-wag" style={{ transformOrigin: "88px 44px", transformBox: "view-box" }}>
+          <path d="M88 44c16-2 22-14 16-26" stroke={INK} strokeWidth="9" fill="none" strokeLinecap="round" />
+          <path d="M88 44c16-2 22-14 16-26" stroke={FUR} strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        </g>
+        <ellipse cx="62" cy="48" rx="29" ry="15" fill={FUR} {...outline} />
+        <path d="M56 34q3 6 0 11M66 34.5q3 6 0 11M76 36q3 5 0 9.5" stroke={STRIPE} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      </g>
+      {/* Hai chân phía gần (trước thân) */}
+      <Leg x={40} y={56} phase="a" />
+      <Leg x={74} y={56} phase="b" />
+      <g className="cat-bob">
+        <path d="M36 21 44 7q2-2 2.5 1L45 27Z" fill={FUR} {...outline} />
+        <path d="M16 27 14 11q0-3 2.5-1.5L27 20Z" fill={FUR} {...outline} />
+        <path d="m18 22-1-9 7 6Z" fill={PINK} />
+        <path d="m38 20 5.5-9v12Z" fill={PINK} />
+        <circle cx="30" cy="34" r="16" fill={FUR} {...outline} />
+        <path d="M28 19.5v5M34 20.5l-1 4.5" stroke={STRIPE} strokeWidth="2.5" strokeLinecap="round" />
+        <ellipse cx="30" cy="41" rx="7" ry="4.6" fill={MUZZLE} />
+        <circle cx="24" cy="33" r="2.6" fill={INK} />
+        <circle cx="36" cy="33" r="2.6" fill={INK} />
+        <circle cx="25" cy="32" r="0.9" fill="#fff" />
+        <circle cx="37" cy="32" r="0.9" fill="#fff" />
+        <ellipse cx="19.5" cy="39" rx="3" ry="1.8" fill={PINK} opacity="0.75" />
+        <ellipse cx="40.5" cy="39" rx="3" ry="1.8" fill={PINK} opacity="0.75" />
+        <path d="M28.3 38.6h3.4l-1.7 2Z" fill={NOSE} stroke={NOSE} strokeWidth="1" strokeLinejoin="round" />
+        <path d="M30 40.6V42m-3 0q1.5 1.5 3 0 1.5 1.5 3 0" stroke={INK} strokeWidth="1.4" fill="none" strokeLinecap="round" />
+        <path d="m15 39-8-1m8 4-8 1.5" stroke={INK} strokeWidth="1.2" strokeLinecap="round" />
+      </g>
+    </svg>
+  );
+}
+
 /** Trạng thái trống có mèo ngủ. */
 export function EmptyState({ children, className, size = "md" }: { children: React.ReactNode; className?: string; size?: "sm" | "md" }) {
   return (

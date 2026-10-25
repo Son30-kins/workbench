@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { PriorityValue, StatusValue } from "@/core/priority";
 import { apiSend, type ApiResult } from "@/server/api";
+import { listTasks } from "@/server/queries";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
@@ -52,4 +53,23 @@ export async function deleteTaskAction(taskId: string): Promise<ActionResult> {
 
 export async function toggleSubtaskAction(subtaskId: string, isDone: boolean): Promise<ActionResult> {
   return done(await apiSend("PATCH", `/api/subtasks/${encodeURIComponent(subtaskId)}`, { done: isDone }));
+}
+
+/** Việc để mèo nhắc: task quá hạn (ưu tiên cao nhất trước) hoặc task đến hạn trong 24 giờ tới. */
+export type CatReminder = {
+  overdueCount: number;
+  task: { id: string; title: string; dueAt: string; overdue: boolean } | null;
+};
+
+export async function catReminderAction(): Promise<CatReminder> {
+  const [overdue, week] = await Promise.all([listTasks({ view: "overdue" }), listTasks({ view: "week" })]);
+  const now = Date.now();
+  const soon = week.find((t) => t.dueAt && t.dueAt.getTime() >= now && t.dueAt.getTime() - now < 24 * 3_600_000);
+  const pick = overdue[0] ?? soon;
+  return {
+    overdueCount: overdue.length,
+    task: pick?.dueAt
+      ? { id: pick.id, title: pick.title, dueAt: pick.dueAt.toISOString(), overdue: pick.dueAt.getTime() < now }
+      : null,
+  };
 }

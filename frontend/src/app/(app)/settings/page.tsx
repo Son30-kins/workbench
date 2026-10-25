@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PreferencesForm } from "@/components/settings/preferences-form";
 import { LanguagePills } from "@/components/language-switcher";
+import { CatReminderCard } from "@/components/settings/cat-reminder-card";
 import { TelegramCard } from "@/components/settings/telegram-card";
 import { Avatar } from "@/components/shell/header";
 import { Card, PageHeader } from "@/components/ui";
@@ -39,6 +40,8 @@ export default async function SettingsPage() {
         </div>
         <LanguagePills />
       </Card>
+
+      <CatReminderCard />
 
       <TelegramCard
         botConfigured={telegram.botConfigured}

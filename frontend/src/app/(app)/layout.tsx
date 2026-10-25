@@ -1,3 +1,4 @@
+import { CatReminder } from "@/components/cat-reminder";
 import { AutoRefresh } from "@/components/shell/auto-refresh";
 import { Header } from "@/components/shell/header";
 import { Panel } from "@/components/shell/panel";
@@ -39,6 +40,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <MobileNav isAdmin={user.role === "ADMIN"} />
       </div>
       <AutoRefresh />
+      <CatReminder tz={user.timezone} />
       {cookieLocale !== locale && <SyncLocaleCookie locale={locale} />}
     </TaskDialogProvider>
   );

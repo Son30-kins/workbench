@@ -251,6 +251,17 @@ export const vi = {
     choose: "— Chọn —",
   },
 
+  catReminder: {
+    label: "Mèo nhắc việc",
+    overdueOne: (title: string) => `Meo~ “${title}” quá hạn rồi đó!`,
+    overdueMany: (n: number, title: string) => `Meo~ Bạn có ${n} việc quá hạn. Làm “${title}” trước nhé?`,
+    soon: (title: string, when: string) => `Meo~ “${title}” sắp đến hạn lúc ${when} đó!`,
+    allClear: "Meo~ Không có việc nào gấp. Giỏi lắm! 🐟",
+    view: "Xem ngay",
+    later: "Để sau",
+    close: "Đóng",
+  },
+
   settings: {
     title: "Cài đặt",
     description: "Tài khoản, kênh nhận nhắc việc và lịch nhắc của riêng bạn.",
@@ -258,6 +269,10 @@ export const vi = {
     administrator: "Quản trị viên",
     languageTitle: "Ngôn ngữ",
     languageHint: "Áp dụng cho giao diện, thông báo và tin nhắn Telegram.",
+    catTitle: "Mèo nhắc việc",
+    catHint: "Thỉnh thoảng một chú mèo chạy ra góc màn hình nhắc task quá hạn hoặc sắp đến hạn. Lưu riêng trên thiết bị này.",
+    catEnabled: "Bật mèo nhắc việc",
+    catTry: "Gọi mèo ra ngay",
     remindersTitle: "Lịch nhắc theo mức ưu tiên",
     remindersHint: "Chọn các mốc nhắc trước hạn chót. Ngoài ra app luôn nhắc khi task vừa quá hạn.",
     overdueRepeat: "Nhắc lại khi quá hạn mỗi",

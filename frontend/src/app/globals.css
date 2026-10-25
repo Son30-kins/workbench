@@ -110,6 +110,30 @@ dialog::backdrop {
 .cat-zzz { animation: cat-float 2.6s ease-in-out infinite; }
 .cat-zzz-2 { animation: cat-float 2.6s ease-in-out 0.8s infinite; }
 .cat-wiggle { transform-box: fill-box; transform-origin: bottom center; animation: cat-wiggle 4s ease-in-out infinite; }
+/* Mèo nhắc việc: bốn chân bước so le, thân nhún theo nhịp bước, đuôi vẫy */
+@keyframes cat-leg {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(24deg); }
+}
+@keyframes cat-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+@keyframes cat-tail {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(14deg); }
+}
+.cat-leg { transform-box: fill-box; transform-origin: top center; }
+.walking .cat-leg { animation: cat-leg 0.32s ease-in-out infinite alternate; }
+.walking .cat-leg-b { animation-direction: alternate-reverse; }
+.walking .cat-bob { animation: cat-bob 0.32s ease-in-out infinite; }
+.cat-tail-wag { animation: cat-tail 1.6s ease-in-out infinite; }
+@keyframes cat-bubble-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.cat-bubble { animation: cat-bubble-in 0.25s ease-out; transform-origin: bottom right; }
+
 @media (prefers-reduced-motion: reduce) {
-  .cat-breathe, .cat-zzz, .cat-zzz-2, .cat-wiggle { animation: none; }
+  .cat-breathe, .cat-zzz, .cat-zzz-2, .cat-wiggle, .cat-leg, .cat-bob, .cat-tail-wag, .cat-bubble { animation: none !important; }
 }
