@@ -1,6 +1,7 @@
 import { FileStack, Play } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EmptyState } from "@/components/cats";
 import { TemplateCardActions } from "@/components/templates/template-card-actions";
 import { Card, PageHeader } from "@/components/ui";
 import { formatInTz } from "@/core/time";
@@ -26,13 +27,15 @@ export default async function TemplatesPage() {
       />
 
       {templates.length === 0 ? (
-        <Card className="px-6 py-16 text-center text-fg-2">Chưa có form mẫu nào.</Card>
+        <Card className="px-6 py-14">
+          <EmptyState>Chưa có form mẫu nào — tạo một form để mèo chia việc giúp bạn.</EmptyState>
+        </Card>
       ) : (
         <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           {templates.map((t) => (
             <Card key={t.id} className="flex flex-col p-6">
               <div className="mb-4 flex items-start justify-between gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blush text-brand">
                   <FileStack size={20} />
                 </span>
                 <TemplateCardActions id={t.id} name={t.name} />

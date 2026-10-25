@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { PeekingCat } from "@/components/cats";
 import { cn } from "@/lib/cn";
 
 type Counts = { all: number; today: number; overdue: number; week: number };
@@ -139,7 +140,8 @@ export function ThemeSwitch() {
   );
 
   return (
-    <div className="mt-6 flex rounded-full bg-hover p-1">
+    <div className="relative mt-16 flex rounded-full bg-hover p-1">
+      <PeekingCat className="pointer-events-none absolute -top-[52px] left-1/2 w-24 -translate-x-1/2" />
       {item(false, <Sun size={16} />, "Sáng")}
       {item(true, <Moon size={16} />, "Tối")}
     </div>

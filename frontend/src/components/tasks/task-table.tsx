@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { useTransition } from "react";
 import { moveTaskAction } from "@/actions/tasks";
+import { EmptyState } from "@/components/cats";
 import { STATUS_LABEL } from "@/core/priority";
 import { cn } from "@/lib/cn";
 import { DueChip, PriorityBadge, type TaskDTO } from "./task-bits";
@@ -14,9 +15,9 @@ export function TaskTable({ tasks, tz, now }: { tasks: TaskDTO[]; tz: string; no
 
   if (tasks.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-line-strong px-6 py-16 text-center text-fg-2">
-        Không có task nào. Bấm “+ Task” hoặc “Điền form mẫu” để bắt đầu.
-      </div>
+      <EmptyState className="rounded-2xl border border-dashed border-line-strong px-6 py-14">
+        Không có task nào — mèo ngủ một giấc đã. Bấm “+ Task” hoặc “Điền form mẫu” để bắt đầu.
+      </EmptyState>
     );
   }
 

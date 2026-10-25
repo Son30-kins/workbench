@@ -55,6 +55,8 @@ Thẻ đang được kéo: nổi lên, có bóng đổ, chỗ cũ để lại kh
 
 ## 7.3 Design tokens
 
+> Bảng dưới là token của **design gốc trên Figma**. App hiện dùng tông pastel hồng – đào, font Nunito và mascot mèo — xem [7.7](#77-giao-diện-mèo-cute).
+
 ### Font
 **Exo 2** (Google Fonts, có hỗ trợ tiếng Việt — kiểm tra lại dấu khi dựng UI).
 
@@ -149,3 +151,38 @@ Các màn hình này dùng lại đúng token và thành phần ở trên (pill,
 ## 7.6 Lưu ý bản quyền
 
 Đây là file Freebie trên Figma Community. Trước khi dùng thật nên xem lại giấy phép trên trang Community của file (thường là CC BY 4.0 — cho phép dùng, cần ghi nguồn tác giả).
+
+## 7.7 Giao diện mèo cute
+
+Bố cục giữ nguyên như design gốc; đổi màu, font và thêm mascot mèo cam.
+
+**Font:** Nunito (Google Fonts, có tiếng Việt), nét tròn mềm.
+
+**Màu** (khai báo trong `frontend/src/app/globals.css`):
+
+| Token | Light | Dark | Dùng cho |
+|---|---|---|---|
+| `bg-app` | `#fff8f3` (kem) | `#2b2124` | nền vùng board |
+| `bg-panel` | `#fff1ea` | `#241b1e` | panel phụ |
+| `bg-card` | `#ffffff` | `#362a2e` | thẻ task |
+| `bg-sidebar` | `#3b2a2f` (nâu cacao) | `#1f1619` | thanh icon |
+| `text-fg` | `#3b2a2f` | `#fff3ee` | chữ chính |
+| `bg-primary` / `text-on-primary` | `#c93c64` / trắng | `#ff8fa6` / `#2b1d21` | nút chính |
+| `brand` | `#c93c64` | `#ff8fa6` | link, nhấn, thanh tiến độ |
+| `blush` | `#ffd6df` | `#5a3640` | nền tròn icon cột, icon form mẫu |
+| `calm` | `#3f63f0` | `#8aa0ff` | mức ưu tiên Trung bình (tách khỏi hồng/đỏ để không nhầm với Khẩn cấp) |
+| `pink` | `#ff8fa6` | `#ff8fa6` | mục đang chọn ở thanh icon, dấu chấm thông báo |
+
+Chữ trên nền đều đạt tương phản WCAG AA (≥ 4.5:1), riêng `danger` / `warning` giữ như cũ.
+
+**Mascot** (`frontend/src/components/cats.tsx`): SVG tự vẽ, không dùng ảnh ngoài nên không lo bản quyền; màu mèo cố định để giống nhau ở 2 chế độ.
+
+| Thành phần | Ở đâu |
+|---|---|
+| `Logo` — mặt mèo | thanh icon, trang đăng nhập, favicon (`src/app/icon.svg`) |
+| `PawPrint` — dấu chân | thanh icon, chân trang đăng nhập, nền trang đăng nhập (`.paw-pattern`) |
+| `PeekingCat` — mèo ló đầu | trên bảng minh hoạ trang đăng nhập, trên nút Sáng/Tối của panel |
+| `SleepingCat` / `EmptyState` — mèo ngủ | cột trống, danh sách trống, chưa có form mẫu, chưa có thông báo |
+| `CatInBox` — mèo trong thùng | trang 404 |
+
+Mèo ngủ thở nhẹ, mèo ló đầu lắc lư; chuyển động tự tắt khi hệ điều hành bật "giảm chuyển động" (`prefers-reduced-motion`). Tiêu đề cột có emoji: 🧶 Cần làm · 🐈 Đang làm · 😸 Hoàn thành.

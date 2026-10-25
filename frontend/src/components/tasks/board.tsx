@@ -16,11 +16,14 @@ import {
 import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { moveTaskAction } from "@/actions/tasks";
+import { SleepingCat } from "@/components/cats";
 import { BOARD_STATUSES, STATUS_LABEL, type StatusValue } from "@/core/priority";
 import { cn } from "@/lib/cn";
 import { compareTasks, type TaskDTO } from "./task-bits";
 import { TaskCard } from "./task-card";
 import { useTaskDialog } from "./task-dialog";
+
+const COLUMN_ICON: Record<StatusValue, string> = { TODO: "🧶", IN_PROGRESS: "🐈", DONE: "😸", CANCELLED: "🙀" };
 
 export function Board({ tasks, tz, now, openTask }: { tasks: TaskDTO[]; tz: string; now: number; openTask?: TaskDTO | null }) {
   const [items, setItems] = useState(tasks);
@@ -128,7 +131,10 @@ function Column({
       )}
     >
       <div className="mb-4 flex items-center justify-between px-1">
-        <h2 className="text-sm font-semibold text-fg-2">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-fg-2">
+          <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-full bg-blush text-sm">
+            {COLUMN_ICON[status]}
+          </span>
           {STATUS_LABEL[status]} ({count})
         </h2>
         <button type="button" onClick={onAdd} className="flex items-center gap-1.5 text-sm font-semibold hover:text-brand">
@@ -142,10 +148,11 @@ function Column({
         {children}
         <div
           className={cn(
-            "min-h-24 flex-1 items-center justify-center rounded-2xl border border-dashed border-line-strong text-sm text-fg-2",
+            "min-h-24 flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-line-strong p-4 text-sm text-fg-2",
             count > 0 ? "hidden lg:flex" : "flex",
           )}
         >
+          {count === 0 && <SleepingCat className="w-28" />}
           Kéo task vào đây…
         </div>
       </div>

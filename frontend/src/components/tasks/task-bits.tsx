@@ -9,7 +9,7 @@ export type TaskDTO = Task;
 const PRIORITY_STYLE: Record<PriorityValue, string> = {
   URGENT: "bg-urgent/10 text-urgent",
   HIGH: "bg-warning/15 text-[#c96d12] dark:text-warning",
-  MEDIUM: "bg-brand/10 text-brand",
+  MEDIUM: "bg-calm/10 text-calm",
   LOW: "bg-muted/15 text-muted",
 };
 

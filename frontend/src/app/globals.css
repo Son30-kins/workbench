@@ -2,38 +2,46 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Design tokens — theo docs/07-ui-design.md (Figma "To do list dashboard") */
+/* Design tokens — tông pastel hồng – đào, mascot mèo (docs/07-ui-design.md) */
 :root {
-  --app: #ffffff;
-  --panel: #fafafb;
-  --column: #ffffff;
+  --app: #fff8f3;
+  --panel: #fff1ea;
+  --column: #fffcfa;
   --card: #ffffff;
-  --fg: #1c1d22;
-  --fg-2: rgb(28 29 34 / 0.55);
-  --line: rgb(28 29 34 / 0.08);
-  --line-strong: rgb(28 29 34 / 0.16);
-  --track: rgb(28 29 34 / 0.08);
-  --hover: rgb(28 29 34 / 0.05);
-  --primary: #1c1d22;
+  --fg: #3b2a2f;
+  --fg-2: rgb(59 42 47 / 0.6);
+  --line: rgb(59 42 47 / 0.09);
+  --line-strong: rgb(59 42 47 / 0.18);
+  --track: rgb(59 42 47 / 0.08);
+  --hover: rgb(201 60 100 / 0.07);
+  --primary: #c93c64;
   --on-primary: #ffffff;
-  --muted: #888da7;
+  --brand: #c93c64;
+  --blush: #ffd6df;
+  --calm: #3f63f0;
+  --muted: #806569;
+  --sidebar: #3b2a2f;
   color-scheme: light;
 }
 
 .dark {
-  --app: #2a2b2f;
-  --panel: #222327;
-  --column: #24262c;
-  --card: #292b31;
-  --fg: #ffffff;
-  --fg-2: rgb(255 255 255 / 0.55);
-  --line: rgb(255 255 255 / 0.1);
-  --line-strong: rgb(255 255 255 / 0.18);
-  --track: rgb(255 255 255 / 0.1);
-  --hover: rgb(255 255 255 / 0.06);
-  --primary: #4b69ff;
-  --on-primary: #ffffff;
-  --muted: #989caa;
+  --app: #2b2124;
+  --panel: #241b1e;
+  --column: #2e2427;
+  --card: #362a2e;
+  --fg: #fff3ee;
+  --fg-2: rgb(255 243 238 / 0.58);
+  --line: rgb(255 243 238 / 0.1);
+  --line-strong: rgb(255 243 238 / 0.18);
+  --track: rgb(255 243 238 / 0.1);
+  --hover: rgb(255 143 166 / 0.09);
+  --primary: #ff8fa6;
+  --on-primary: #2b1d21;
+  --brand: #ff8fa6;
+  --blush: #5a3640;
+  --calm: #8aa0ff;
+  --muted: #b89ca2;
+  --sidebar: #1f1619;
   color-scheme: dark;
 }
 
@@ -51,13 +59,16 @@
   --color-primary: var(--primary);
   --color-on-primary: var(--on-primary);
   --color-muted: var(--muted);
-  --color-sidebar: #1c1d22;
-  --color-brand: #4b69ff;
-  --color-danger: #ff7979;
+  --color-sidebar: var(--sidebar);
+  --color-brand: var(--brand);
+  --color-blush: var(--blush);
+  --color-calm: var(--calm);
+  --color-pink: #ff8fa6;
+  --color-danger: #ff6b6b;
   --color-warning: #ffa048;
-  --color-success: #78d700;
-  --color-urgent: #ff4d4f;
-  --font-sans: var(--font-exo2), ui-sans-serif, system-ui, sans-serif;
+  --color-success: #5cc98a;
+  --color-urgent: #f0434c;
+  --font-sans: var(--font-nunito), ui-rounded, ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
@@ -75,4 +86,30 @@ dialog::backdrop {
 .thin-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
+}
+
+/* Hình dấu chân mèo mờ làm nền (trang đăng nhập) */
+.paw-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M18 30c-4 0-7-2-7-5 0-3.4 3.4-6.5 7-6.5s7 3.1 7 6.5c0 3-3 5-7 5Z'/%3E%3Ccircle cx='10' cy='15' r='2.6'/%3E%3Ccircle cx='15' cy='10' r='2.7'/%3E%3Ccircle cx='21' cy='10' r='2.7'/%3E%3Ccircle cx='26' cy='15' r='2.6'/%3E%3Cpath d='M54 66c-4 0-7-2-7-5 0-3.4 3.4-6.5 7-6.5s7 3.1 7 6.5c0 3-3 5-7 5Z'/%3E%3Ccircle cx='46' cy='51' r='2.6'/%3E%3Ccircle cx='51' cy='46' r='2.7'/%3E%3Ccircle cx='57' cy='46' r='2.7'/%3E%3Ccircle cx='62' cy='51' r='2.6'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Mèo ngủ thở nhẹ, mèo ló đầu lắc lư — tắt khi người dùng chọn giảm chuyển động */
+@keyframes cat-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025, 0.975); }
+}
+@keyframes cat-float {
+  0%, 100% { opacity: 0.35; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-4px); }
+}
+@keyframes cat-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-3deg); }
+}
+.cat-breathe { transform-box: fill-box; transform-origin: bottom; animation: cat-breathe 3.2s ease-in-out infinite; }
+.cat-zzz { animation: cat-float 2.6s ease-in-out infinite; }
+.cat-zzz-2 { animation: cat-float 2.6s ease-in-out 0.8s infinite; }
+.cat-wiggle { transform-box: fill-box; transform-origin: bottom center; animation: cat-wiggle 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cat-breathe, .cat-zzz, .cat-zzz-2, .cat-wiggle { animation: none; }
 }
