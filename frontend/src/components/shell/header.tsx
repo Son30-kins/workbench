@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { markNotificationsReadAction } from "@/actions/settings";
+import { EmptyState } from "@/components/cats";
 import { formatInTz } from "@/core/time";
 import { cn } from "@/lib/cn";
 import { useSignOut } from "./sidebar";
@@ -27,7 +28,7 @@ export function Header({
   const firstName = user.name.split(" ").filter(Boolean).pop() ?? user.name;
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 px-4 pb-4 pt-6 md:px-8 md:pt-8">
-      <h1 className="text-xl font-bold">Xin chào, {firstName} 👋</h1>
+      <h1 className="text-xl font-bold">Xin chào, {firstName} 😺</h1>
       <div className="flex items-center gap-2 md:gap-4">
         <SearchBox />
         <NotificationBell items={notifications} unread={unread} tz={tz} />
@@ -113,13 +114,17 @@ function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; un
         className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-hover"
       >
         <Bell size={20} />
-        {unread > 0 && <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-app bg-warning" />}
+        {unread > 0 && <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border-2 border-app bg-pink" />}
       </button>
       {open && (
         <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-line bg-card shadow-xl">
           <div className="border-b border-line px-4 py-3 text-sm font-semibold">Thông báo</div>
           <ul className="max-h-96 overflow-y-auto thin-scroll">
-            {items.length === 0 && <li className="px-4 py-6 text-center text-sm text-fg-2">Chưa có thông báo</li>}
+            {items.length === 0 && (
+              <li className="px-4 py-6">
+                <EmptyState size="sm">Chưa có thông báo — mèo đang ngủ ngon</EmptyState>
+              </li>
+            )}
             {items.map((n) => (
               <li key={n.id} className={cn("border-b border-line last:border-0", !n.readAt && "bg-brand/5")}>
                 <Link
@@ -189,7 +194,7 @@ export function Avatar({ name, image, size = 40 }: { name: string; image: string
   }
   const initials = name.split(" ").filter(Boolean).slice(-2).map((p) => p[0]).join("").toUpperCase();
   return (
-    <span className="flex items-center justify-center rounded-full bg-brand text-sm font-bold text-white" style={{ width: size, height: size }}>
+    <span className="flex items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary" style={{ width: size, height: size }}>
       {initials || "?"}
     </span>
   );

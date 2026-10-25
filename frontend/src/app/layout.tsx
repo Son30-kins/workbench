@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Exo_2 } from "next/font/google";
+import { Nunito } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const exo2 = Exo_2({
-  variable: "--font-exo2",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -16,14 +16,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#2a2b2f" },
+    { media: "(prefers-color-scheme: light)", color: "#fff8f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#2b2124" },
   ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="vi" suppressHydrationWarning className={`${exo2.variable} h-full antialiased`}>
+    <html lang="vi" suppressHydrationWarning className={`${nunito.variable} h-full antialiased`}>
       <body className="min-h-full">
         <ThemeProvider>{children}</ThemeProvider>
       </body>

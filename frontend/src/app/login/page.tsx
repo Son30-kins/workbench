@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/server/session";
 import { GoogleSignInButton } from "./google-button";
-import { Logo } from "@/components/logo";
+import { Logo, PawPrint, PeekingCat } from "@/components/cats";
 
 export const metadata: Metadata = { title: "Đăng nhập" };
 export const dynamic = "force-dynamic";
@@ -23,24 +23,26 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <main className="grid min-h-screen lg:grid-cols-2">
-      <section className="relative hidden overflow-hidden bg-sidebar p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <Logo className="h-9 w-9" />
+      <section className="paw-pattern relative hidden overflow-hidden bg-sidebar p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <Logo className="h-10 w-10 text-[#ffd9b8]" />
         <div className="space-y-6">
           <BoardIllustration />
           <h2 className="max-w-md text-3xl font-bold leading-tight">
             Điền một form — app tự tạo cả chuỗi công việc cho bạn.
           </h2>
           <p className="max-w-md text-white/60">
-            Ưu tiên rõ ràng, hạn chót tự tính, nhắc việc qua Telegram trước khi quá hạn.
+            Ưu tiên rõ ràng, hạn chót tự tính — và một chú mèo nhắc việc qua Telegram trước khi quá hạn.
           </p>
         </div>
-        <p className="text-sm text-white/40">Workbench · tự host bằng Docker</p>
+        <p className="flex items-center gap-2 text-sm text-white/40">
+          <PawPrint className="h-3.5 w-3.5 text-pink" /> Workbench · tự host bằng Docker
+        </p>
       </section>
 
       <section className="flex items-center justify-center bg-app px-6 py-16">
         <div className="w-full max-w-sm space-y-8">
           <div className="space-y-3">
-            <Logo className="h-10 w-10 text-fg lg:hidden" />
+            <PeekingCat className="w-28 lg:hidden" />
             <h1 className="text-3xl font-bold">Đăng nhập</h1>
             <p className="text-fg-2">Dùng tài khoản Google của bạn để tiếp tục.</p>
           </div>
@@ -64,26 +66,30 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
 const ILLUSTRATION_COLUMNS = [
   [["w-3/4", "bg-danger"], ["w-2/3", "bg-warning"]],
-  [["w-4/5", "bg-warning"], ["w-1/2", "bg-brand"]],
+  [["w-4/5", "bg-warning"], ["w-1/2", "bg-pink"]],
   [["w-2/3", "bg-success"], ["w-3/4", "bg-success"]],
 ];
 
 function BoardIllustration() {
   return (
-    <div aria-hidden className="grid max-w-md grid-cols-3 gap-3">
-      {ILLUSTRATION_COLUMNS.map((col, i) => (
-        <div key={i} className="space-y-3 rounded-2xl border border-white/10 p-2">
-          {col.map(([w, color], j) => (
-            <div key={j} className="space-y-2 rounded-xl bg-white/[0.06] p-3">
-              <div className={`h-2 rounded-full bg-white/70 ${w}`} />
-              <div className="h-1.5 w-1/2 rounded-full bg-white/25" />
-              <div className="h-1 rounded-full bg-white/10">
-                <div className={`h-1 rounded-full ${color}`} style={{ width: "60%" }} />
+    <div aria-hidden className="relative max-w-md pt-16">
+      {/* Mèo ló đầu, hai chân bám mép trên của bảng */}
+      <PeekingCat className="absolute top-1 left-1/2 w-32 -translate-x-1/2" />
+      <div className="grid grid-cols-3 gap-3">
+        {ILLUSTRATION_COLUMNS.map((col, i) => (
+          <div key={i} className="space-y-3 rounded-2xl border border-white/10 p-2">
+            {col.map(([w, color], j) => (
+              <div key={j} className="space-y-2 rounded-xl bg-white/[0.06] p-3">
+                <div className={`h-2 rounded-full bg-white/70 ${w}`} />
+                <div className="h-1.5 w-1/2 rounded-full bg-white/25" />
+                <div className="h-1 rounded-full bg-white/10">
+                  <div className={`h-1 rounded-full ${color}`} style={{ width: "60%" }} />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ))}
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
