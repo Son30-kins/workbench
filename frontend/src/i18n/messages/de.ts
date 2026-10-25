@@ -101,6 +101,7 @@ export const de: Messages = {
     noDue: "Ohne Frist",
     overdueTitle: "Überfällig",
     soonTitle: "Fällig in den nächsten 24 Stunden",
+    moreSubtasks: (n) => `+${n} ${n === 1 ? "weitere Unteraufgabe" : "weitere Unteraufgaben"} — Karte anklicken für alle`,
   },
 
   table: {

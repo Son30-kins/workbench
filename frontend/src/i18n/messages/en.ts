@@ -101,6 +101,7 @@ export const en: Messages = {
     noDue: "No due date",
     overdueTitle: "Overdue",
     soonTitle: "Due within 24 hours",
+    moreSubtasks: (n) => `+${n} more ${n === 1 ? "subtask" : "subtasks"} — click the card to see all`,
   },
 
   table: {
