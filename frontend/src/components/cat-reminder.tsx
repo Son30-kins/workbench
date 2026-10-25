@@ -48,7 +48,7 @@ export function setCatEnabled(on: boolean) {
 
 type Reminder = { text: string; taskId: string | null };
 
-/** Thỉnh thoảng hiện thẻ có hình mèo ở góc dưới màn hình, nhắc task quá hạn / sắp đến hạn. */
+/** Thỉnh thoảng hiện bé mèo ở góc dưới màn hình, lời nhắc task quá hạn / sắp đến hạn trong bong bóng trên đầu mèo. */
 export function CatReminder({ tz }: { tz: string }) {
   const { locale, t } = useI18n();
   const router = useRouter();
@@ -124,14 +124,15 @@ export function CatReminder({ tz }: { tz: string }) {
   if (!reminder) return null;
   const c = t.catReminder;
 
+  // Mèo ngồi ở góc dưới, lời nhắc trong bong bóng thoại ngay trên đầu mèo (đuôi bong bóng chỉ xuống giữa đầu mèo:
+  // mèo rộng 96px, cách mép phải 16px → tâm cách mép phải 64px)
   return (
     <div
       role="status"
       aria-label={c.label}
-      className="cat-bubble fixed right-4 bottom-20 z-30 flex w-[22rem] max-w-[calc(100vw-2rem)] items-center gap-3 rounded-2xl border border-line bg-card p-3 pr-9 shadow-xl md:right-8 md:bottom-6"
+      className="cat-bubble fixed right-4 bottom-20 z-30 flex w-72 max-w-[calc(100vw-2rem)] flex-col items-end md:right-8 md:bottom-6"
     >
-      <SittingKitten className="w-20 shrink-0" />
-      <div className="min-w-0 flex-1">
+      <div className="relative w-full rounded-2xl border border-line bg-card p-4 pr-9 shadow-xl">
         <p className="text-sm font-semibold leading-snug">{reminder.text}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {reminder.taskId && (
@@ -154,15 +155,17 @@ export function CatReminder({ tz }: { tz: string }) {
             {c.later}
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => hide()}
+          aria-label={c.close}
+          className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full text-fg-2 hover:bg-hover hover:text-fg"
+        >
+          <X size={14} />
+        </button>
+        <span aria-hidden className="absolute -bottom-[7px] right-[57px] h-3.5 w-3.5 rotate-45 border-r border-b border-line bg-card" />
       </div>
-      <button
-        type="button"
-        onClick={() => hide()}
-        aria-label={c.close}
-        className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full text-fg-2 hover:bg-hover hover:text-fg"
-      >
-        <X size={14} />
-      </button>
+      <SittingKitten className="mt-2 mr-4 w-24 drop-shadow-md" />
     </div>
   );
 }

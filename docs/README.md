@@ -33,3 +33,4 @@ App quản lý công việc tự host bằng Docker, nhiều người dùng (đ�
 - 2026-10-25: Giao diện mèo cute (pastel hồng – đào, font Nunito, mascot SVG); đa ngôn ngữ **Tiếng Việt / English / Deutsch** (cả lỗi API, tin Telegram, form mẫu mặc định); thẻ task hiện task con. Viết [hướng dẫn cài cho người mới](huong-dan-cai-dat.md). Phát hành **v0.3.0**.
 - 2026-10-25: **Mèo nhắc việc** — bé mèo mướp xám bước bằng 4 chân có khớp, thỉnh thoảng đi ra góc màn hình nhắc task quá hạn / sắp đến hạn, ngồi nói rồi chạy đi (bật / tắt trong Cài đặt). Phát hành **v0.4.0**.
 - 2026-10-25: Bỏ chuyển động của mèo nhắc việc — chỉ hiện thẻ có hình mèo (ảnh tĩnh) kèm lời nhắc. Phát hành **v0.4.1**.
+- 2026-10-25: Lời nhắc của mèo chuyển thành bong bóng thoại trên đầu mèo. Phát hành **v0.4.2**.
