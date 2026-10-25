@@ -2,36 +2,58 @@
 #   1. cp .env.example .env   rồi điền các giá trị bắt buộc
 #   2. docker compose up -d
 #   3. mở http://localhost:3000
-# Có tên miền + HTTPS: điền DOMAIN và APP_URL=https://<tên miền>, rồi chạy
+# Có tên miền + HTTPS: điền DOMAIN, APP_URL=https://<tên miền>, COOKIE_SECURE=true rồi chạy
 #   docker compose --profile https up -d
+#
+# Kiến trúc:  trình duyệt ──► web (Next.js, cổng 3000) ──► api (Spring Boot) ──► db (PostgreSQL)
+# Mỗi container chỉ nhận đúng biến môi trường nó cần (không dùng env_file chung).
 name: workbench
 
-x-app: &app
-  image: sonnld3007/workbench:${APP_VERSION:-latest}
-  env_file: .env
-  environment:
-    DATABASE_URL: postgres://workbench:${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}@db:5432/workbench
-  depends_on:
-    db:
-      condition: service_healthy
-  restart: unless-stopped
-
 services:
-  app:
-    <<: *app
-    command: ["web"]
+  web:
+    image: sonnld3007/workbench:${APP_VERSION:-latest}
+    environment:
+      API_URL: http://api:8080
+      # Chỉ dùng để sinh khoá mã hoá Server Action riêng cho bản cài này
+      AUTH_SECRET: ${AUTH_SECRET:?Chưa đặt AUTH_SECRET trong .env}
     ports:
       - "${APP_PORT:-3000}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
-      start_period: 30s
+      start_period: 20s
       retries: 3
+    restart: unless-stopped
 
-  worker:
-    <<: *app
-    command: ["worker"]
+  api:
+    image: sonnld3007/workbench-api:${APP_VERSION:-latest}
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/workbench
+      DATABASE_USER: workbench
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Chưa đặt POSTGRES_PASSWORD trong .env}
+      APP_URL: ${APP_URL:?Chưa đặt APP_URL trong .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?Chưa đặt GOOGLE_CLIENT_ID trong .env}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?Chưa đặt GOOGLE_CLIENT_SECRET trong .env}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      ALLOWED_EMAILS: ${ALLOWED_EMAILS:-}
+      ALLOWED_DOMAINS: ${ALLOWED_DOMAINS:-}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    restart: unless-stopped
+    # Không mở cổng ra ngoài — chỉ web gọi được API
 
   db:
     image: postgres:17-alpine
@@ -47,19 +69,19 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
-    # Không mở cổng ra ngoài — chỉ app và worker kết nối được
+    # Không mở cổng ra ngoài — chỉ api kết nối được
 
   caddy:
     image: caddy:2-alpine
     profiles: ["https"]
-    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to app:3000
+    command: caddy reverse-proxy --from ${DOMAIN:-localhost} --to web:3000
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - caddy_data:/data
     depends_on:
-      - app
+      - web
     restart: unless-stopped
 
 volumes:

@@ -2,6 +2,8 @@
 
 App quản lý công việc **tự host**: điền **form mẫu** → app **tự tạo cả chuỗi task** với hạn chót và mức ưu tiên, **nhắc việc qua Telegram** trước khi đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người.
 
+Gồm 2 image phát hành cùng phiên bản: **`sonnld3007/workbench`** (giao diện web, Next.js) và **`sonnld3007/workbench-api`** (backend Spring Boot). File `docker-compose.yml` (tải ở bước dưới) chạy cả hai cùng PostgreSQL.
+
 Mã nguồn & tài liệu: https://github.com/Son30-kins/workbench
 
 ## Cài đặt nhanh
@@ -47,13 +49,13 @@ docker compose exec db pg_dump -U workbench workbench > backup-$(date +%F).sql
 | Tag | Ý nghĩa |
 |---|---|
 | `1.2.3` | Đúng một phiên bản (khuyên dùng — đặt `APP_VERSION=1.2.3` trong `.env`) |
-| `1.2`, `1` | Bản vá mới nhất của nhánh đó |
+| `1.2` | Bản vá mới nhất của nhánh đó (tag `1` có từ bản 1.0) |
 | `latest` | Bản ổn định mới nhất |
 
 Kiến trúc: `linux/amd64`, `linux/arm64` (Mac chip M, Raspberry Pi).
 
 ## Bảo mật
 
-Image **không chứa bí mật nào**. Mọi key được truyền lúc chạy qua `.env` trên máy bạn; khoá nội bộ của Next.js được sinh riêng cho từng bản cài từ `AUTH_SECRET`. Mỗi bản phát hành được quét bí mật và lỗ hổng (Trivy) trước khi đẩy lên.
+Image **không chứa bí mật nào**. Mọi key được truyền lúc chạy qua `.env` trên máy bạn, mỗi container chỉ nhận đúng biến nó cần; khoá nội bộ của Next.js được sinh riêng cho từng bản cài từ `AUTH_SECRET`. API và database không mở cổng ra ngoài. Mỗi bản phát hành được quét bí mật và lỗ hổng (Trivy) trước khi đẩy lên.
 
 Giấy phép MIT.

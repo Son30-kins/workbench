@@ -1,4 +1,6 @@
-# Tạo tag `v1.2.3` trên main → build image đa kiến trúc → quét → đẩy lên Docker Hub.
+# Tạo tag `v1.2.3` trên main → build 2 image đa kiến trúc → quét → đẩy lên Docker Hub.
+#   sonnld3007/workbench      — giao diện web (Next.js)
+#   sonnld3007/workbench-api  — backend (Spring Boot)
 # Cần 2 secrets trong GitHub (Settings → Secrets and variables → Actions):
 #   DOCKERHUB_USERNAME — tên tài khoản Docker Hub
 #   DOCKERHUB_TOKEN    — Personal Access Token (Read & Write), KHÔNG dùng mật khẩu
@@ -15,12 +17,21 @@ concurrency:
   group: release
   cancel-in-progress: false
 
-env:
-  IMAGE: sonnld3007/workbench
-
 jobs:
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: api
+            context: backend
+            image: sonnld3007/workbench-api
+            description: "Workbench API (Spring Boot) — backend của app quản lý công việc tự host"
+          - name: web
+            context: frontend
+            image: sonnld3007/workbench
+            description: "Quản lý công việc tự host: form mẫu tự sinh task, ưu tiên, nhắc việc qua Telegram"
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
@@ -29,34 +40,35 @@ jobs:
       - id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: ${{ env.IMAGE }}
+          images: ${{ matrix.image }}
+          # Bản 0.x chưa ổn định → chưa gắn tag theo số major
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
           flavor: latest=auto
 
       # 1. Build bản amd64 để quét trước khi phát hành
       - name: Build để quét
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          context: .
+          context: ${{ matrix.context }}
           load: true
-          tags: workbench:scan
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: workbench-${{ matrix.name }}:scan
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
       - name: Quét bí mật — có là dừng
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: workbench:scan
+          image-ref: workbench-${{ matrix.name }}:scan
           scanners: secret
           exit-code: "1"
 
       - name: Quét lỗ hổng nghiêm trọng (đã có bản vá) — có là dừng
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: workbench:scan
+          image-ref: workbench-${{ matrix.name }}:scan
           scanners: vuln
           severity: CRITICAL
           ignore-unfixed: true
@@ -71,13 +83,13 @@ jobs:
       - name: Build & đẩy lên Docker Hub
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          context: .
+          context: ${{ matrix.context }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           provenance: true
           sbom: true
 
@@ -87,6 +99,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ env.IMAGE }}
+          repository: ${{ matrix.image }}
           readme-filepath: ./DOCKERHUB.md
-          short-description: "Quản lý công việc tự host: form mẫu tự sinh task, ưu tiên, nhắc việc qua Telegram"
+          short-description: ${{ matrix.description }}

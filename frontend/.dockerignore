@@ -1,0 +1,21 @@
+# Bí mật — không bao giờ đưa vào image
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+credentials*.json
+service-account*.json
+client_secret*.json
+
+# Không cần trong image
+node_modules
+.next
+coverage
+*.md
+Dockerfile*
+.DS_Store
+tsconfig.tsbuildinfo
+next-env.d.ts

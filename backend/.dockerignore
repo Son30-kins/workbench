@@ -1,0 +1,16 @@
+# Bí mật — không bao giờ đưa vào image
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Không cần trong image
+target/
+.idea/
+*.iml
+.vscode/
+*.md
+Dockerfile*

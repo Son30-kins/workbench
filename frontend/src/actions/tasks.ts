@@ -1,0 +1,55 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import type { PriorityValue, StatusValue } from "@/core/priority";
+import { apiSend, type ApiResult } from "@/server/api";
+
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
+export type TaskFormData = {
+  title: string;
+  description?: string;
+  due?: string; // "YYYY-MM-DDTHH:mm" theo giờ của người dùng, hoặc "" — API tự đổi theo múi giờ
+  priority: PriorityValue;
+  status: StatusValue;
+  tags?: string[];
+  subtasks?: { title: string; done: boolean }[];
+};
+
+function toBody(data: TaskFormData) {
+  return {
+    title: data.title,
+    description: data.description ?? "",
+    due: data.due ? data.due.slice(0, 16) : null,
+    priority: data.priority,
+    status: data.status,
+    tags: (data.tags ?? []).map((t) => t.trim()).filter(Boolean),
+    subtasks: (data.subtasks ?? []).filter((s) => s.title.trim()),
+  };
+}
+
+function done(res: ApiResult<unknown>): ActionResult {
+  if (!res.ok) return { ok: false, error: res.error.message };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function createTaskAction(data: TaskFormData): Promise<ActionResult> {
+  return done(await apiSend("POST", "/api/tasks", toBody(data)));
+}
+
+export async function updateTaskAction(taskId: string, data: TaskFormData): Promise<ActionResult> {
+  return done(await apiSend("PUT", `/api/tasks/${encodeURIComponent(taskId)}`, toBody(data)));
+}
+
+export async function moveTaskAction(taskId: string, status: string): Promise<ActionResult> {
+  return done(await apiSend("PATCH", `/api/tasks/${encodeURIComponent(taskId)}/status`, { status }));
+}
+
+export async function deleteTaskAction(taskId: string): Promise<ActionResult> {
+  return done(await apiSend("DELETE", `/api/tasks/${encodeURIComponent(taskId)}`));
+}
+
+export async function toggleSubtaskAction(subtaskId: string, isDone: boolean): Promise<ActionResult> {
+  return done(await apiSend("PATCH", `/api/subtasks/${encodeURIComponent(subtaskId)}`, { done: isDone }));
+}

@@ -18,8 +18,11 @@ backups/
 *.sql
 *.sql.gz
 *.dump
-# ...trừ migration của database (do drizzle-kit sinh, không chứa dữ liệu)
-!drizzle/*.sql
+# ...trừ migration Flyway của backend (schema, không chứa dữ liệu)
+!backend/src/main/resources/db/migration/*.sql
+
+# ===== Java / Maven =====
+target/
 
 # ===== Node / Next.js =====
 node_modules/

@@ -1,9 +1,9 @@
 # 3. Mô hình dữ liệu
 
-Định nghĩa thật trong code: [src/db/schema.ts](../src/db/schema.ts) (Drizzle ORM, PostgreSQL). Migration sinh tự động trong [drizzle/](../drizzle/).
+Định nghĩa thật: migration Flyway [V1__init.sql](../backend/src/main/resources/db/migration/V1__init.sql) + entity JPA trong `backend/src/main/java/…/domain/`. Hibernate chỉ kiểm tra schema khớp (`ddl-auto: validate`), không tự sửa bảng — muốn đổi schema thì thêm file `V2__….sql`.
 
 ```
-user 1───* session / account / verification   (đăng nhập Google — Better Auth quản lý)
+users 1───* spring_session (+ _attributes)   (phiên đăng nhập — Spring Session JDBC quản lý)
   │
   ├──* notification_channels   (Telegram của người đó)
   ├──* notifications           (chuông thông báo trong app)
@@ -12,29 +12,29 @@ user 1───* session / account / verification   (đăng nhập Google — Be
   │      └──* template_runs (mỗi lần điền form) 1───* tasks
   │
   └──* tasks 1───* subtasks
-           └──* reminders   (lịch nhắc — worker quét)
+           └──* reminders   (lịch nhắc — job @Scheduled quét)
 
 app_settings   (cài đặt cả bản cài: danh sách email/tên miền được phép, tên bot Telegram)
 ```
 
-**Nguyên tắc nhiều người dùng:** mọi bảng dữ liệu chính đều có `user_id`; bảng con (`subtasks`) thuộc người dùng qua bảng cha. Lớp truy cập dữ liệu ([src/server/](../src/server/)) **không có hàm nào** đọc/sửa chỉ bằng id — luôn kèm `user_id` của người đang đăng nhập. Test: [tests/data-isolation.test.ts](../tests/data-isolation.test.ts).
+**Nguyên tắc nhiều người dùng:** mọi bảng dữ liệu chính đều có `user_id`; bảng con (`subtasks`) thuộc người dùng qua bảng cha. Các port repository trong `domain/` **không có hàm nào** cho người dùng đọc/sửa chỉ bằng id — luôn kèm `user_id` của người đang đăng nhập (`findOwned`, `deleteOwned`). Test: `backend/src/test/java/…/application/DataIsolationTests.java`.
 
 ## Các bảng
 
-### `user`
+### `users`
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
-| id | text | Better Auth sinh |
+| id | uuid | Hibernate sinh |
+| google_subject | text | claim `sub` của Google — định danh không đổi, unique |
 | name, email, image | text | lấy từ Google; email unique |
-| email_verified | bool | chỉ nhận tài khoản Google đã xác minh |
-| role | enum `ADMIN` / `USER` | người đăng nhập đầu tiên của bản cài là `ADMIN` |
+| role | text `ADMIN` / `USER` (CHECK) | người đăng nhập đầu tiên của bản cài là `ADMIN` |
 | banned | bool | admin khoá → xoá mọi phiên đăng nhập |
 | timezone | text | mặc định theo `TZ` của bản cài (`Asia/Ho_Chi_Minh`) |
-| settings | jsonb | lịch nhắc theo ưu tiên, giờ yên lặng, bản tin buổi sáng ([src/core/user-settings.ts](../src/core/user-settings.ts)) |
-| last_digest_on | text | ngày (giờ địa phương) đã gửi bản tin — chống gửi trùng |
+| settings | jsonb | lịch nhắc theo ưu tiên, giờ yên lặng, bản tin buổi sáng (record `UserSettings`) |
+| last_digest_on | date | ngày (giờ địa phương) đã gửi bản tin — chống gửi trùng |
 
-### `session`, `account`, `verification`
-Bảng của Better Auth. `account` chỉ chứa liên kết Google (không có mật khẩu).
+### `spring_session`, `spring_session_attributes`
+Phiên đăng nhập của Spring Session JDBC (schema chính thức). `principal_name` = id người dùng → khoá tài khoản xoá được mọi phiên của người đó. Không lưu mật khẩu (chỉ đăng nhập Google).
 
 ### `app_settings`
 | key | value |
@@ -50,7 +50,7 @@ Bảng của Better Auth. `account` chỉ chứa liên kết Google (không có 
 | fields | jsonb | `[{ key, label, type, required, options, defaultValue }]` — type: `TEXT`, `TEXTAREA`, `NUMBER`, `DATE`, `DATETIME`, `SELECT`, `CHECKBOX` |
 | rules | jsonb | `[{ id, title, description, priority, due: { anchor, offsetDays, offsetHours, time }, condition, subtasks, tags }]` |
 
-Lưu dạng JSON (thay vì bảng con) vì luôn đọc/ghi cả template một lần; cấu trúc được kiểm tra bằng Zod ([src/core/template-schema.ts](../src/core/template-schema.ts)) — mã trường không trùng, biến `{{...}}` phải tồn tại, mốc hạn phải là trường ngày.
+Lưu dạng JSON (thay vì bảng con) vì luôn đọc/ghi cả template một lần; cấu trúc được kiểm tra bằng Bean Validation trên record `TemplateField` / `TemplateRule` + `TemplateValidator` — mã trường không trùng, biến `{{...}}` phải tồn tại, mốc hạn phải là trường ngày.
 
 `due.anchor`: `null` = không có hạn · `__submitted__` = lúc điền form · mã một trường `DATE`/`DATETIME`. Mốc là ngày mà không đặt giờ → 23:59.
 
@@ -63,8 +63,8 @@ Lưu dạng JSON (thay vì bảng con) vì luôn đọc/ghi cả template một 
 | id, user_id | text | |
 | title, description | text | |
 | due_at | timestamptz | nullable |
-| priority | enum `URGENT` / `HIGH` / `MEDIUM` / `LOW` | |
-| status | enum `TODO` / `IN_PROGRESS` / `DONE` / `CANCELLED` | |
+| priority | text `URGENT` / `HIGH` / `MEDIUM` / `LOW` (CHECK) | cột `priority_rank` (generated) dùng để sắp xếp |
+| status | text `TODO` / `IN_PROGRESS` / `DONE` / `CANCELLED` | |
 | tags | text[] | |
 | template_run_id, template_name | | nguồn gốc nếu sinh từ form mẫu |
 | completed_at | timestamptz | đặt khi chuyển sang `DONE` |
@@ -78,12 +78,12 @@ Index `(user_id, status, due_at)`.
 | Cột | Kiểu | Ghi chú |
 |---|---|---|
 | task_id, user_id | | |
-| kind | enum `BEFORE_DUE` / `OVERDUE` / `SNOOZE` | |
+| kind | text `BEFORE_DUE` / `OVERDUE` / `SNOOZE` | |
 | fire_at | timestamptz | index `(status, fire_at)` |
-| status | enum `PENDING` / `SENT` / `CANCELLED` / `FAILED` | |
+| status | text `PENDING` / `SENT` / `CANCELLED` / `FAILED` | |
 | sent_at, last_error | | |
 
-Sinh lại mỗi khi hạn / ưu tiên / trạng thái task đổi, hoặc khi người dùng đổi cài đặt nhắc ([src/server/reminders.ts](../src/server/reminders.ts)).
+Sinh lại mỗi khi hạn / ưu tiên / trạng thái task đổi, hoặc khi người dùng đổi cài đặt nhắc (`application/reminder/ReminderService`).
 
 ### `notifications`
 | id | user_id | task_id | title | body | read_at | created_at |

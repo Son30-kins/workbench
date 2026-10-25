@@ -9,59 +9,68 @@ permissions:
   contents: read
 
 jobs:
+  # Tên job "test" / "docker" là check bắt buộc của nhánh main — đổi tên thì cập nhật branch protection
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: workbench
-          POSTGRES_DB: workbench
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U workbench"
-          --health-interval 5s --health-timeout 5s --health-retries 10
-    env:
-      DATABASE_URL: postgres://workbench@localhost:5432/workbench
-      APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # ---- Backend: Spring Boot (test tích hợp dùng Testcontainers → Docker có sẵn trên runner) ----
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+      - name: Backend — build + test
+        working-directory: backend
+        run: ./mvnw -B verify
+
+      # ---- Frontend: Next.js ----
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
-
-      # Giá trị giả chỉ dùng trong CI, sinh ngẫu nhiên mỗi lần chạy — không có bí mật thật nào
-      - name: Cấu hình môi trường test
+          cache-dependency-path: frontend/package-lock.json
+      - name: Frontend — lint, typecheck, build
+        working-directory: frontend
         run: |
-          echo "AUTH_SECRET=$(openssl rand -base64 32)" >> "$GITHUB_ENV"
-          echo "GOOGLE_CLIENT_ID=ci" >> "$GITHUB_ENV"
-          echo "GOOGLE_CLIENT_SECRET=ci" >> "$GITHUB_ENV"
-
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run db:migrate
-      - run: npm test
-      - run: npm run build
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm run build
 
   docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-      - name: Build image (không đẩy)
+
+      - name: Build image API (không đẩy)
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
-          context: .
+          context: backend
           load: true
-          tags: workbench:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      - name: Quét bí mật trong image
+          tags: workbench-api:ci
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build image web (không đẩy)
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: frontend
+          load: true
+          tags: workbench-web:ci
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Quét bí mật trong image API
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: workbench:ci
+          image-ref: workbench-api:ci
+          scanners: secret
+          exit-code: "1"
+      - name: Quét bí mật trong image web
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: workbench-web:ci
           scanners: secret
           exit-code: "1"

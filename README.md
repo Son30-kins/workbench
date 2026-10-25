@@ -28,34 +28,33 @@ docker compose up -d
 
 ## Phát triển
 
-Cần Node.js 24+, Docker.
+Cần **Java 25**, **Node.js 24+**, **Docker**. Backend: Spring Boot 4 (Maven, DDD, Lombok) — đọc [docs/10-backend-spring-boot.md](docs/10-backend-spring-boot.md).
 
 ```bash
 git clone https://github.com/Son30-kins/workbench.git
 cd workbench
 brew install gitleaks                    # bắt buộc — quét bí mật trước mỗi commit
 git config core.hooksPath .githooks      # bật hook chặn commit có bí mật
-npm ci
-cp .env.example .env.local               # điền key dev của riêng bạn (Google OAuth client cho localhost)
-# trong .env.local: DATABASE_URL=postgres://workbench@127.0.0.1:5433/workbench
-npm run db:up                            # Postgres cho dev (chỉ mở trên 127.0.0.1)
-npm run db:migrate
-npm run dev                              # web: http://localhost:3000
-npm run worker                           # nhắc việc + bot Telegram (cửa sổ terminal khác)
+cp .env.example .env.local               # điền key dev (Google OAuth client cho localhost)
+# trong .env.local:  DATABASE_URL=jdbc:postgresql://127.0.0.1:5433/workbench
+#                    DATABASE_USER=workbench
+docker compose -f docker-compose.dev.yml up -d   # Postgres cho dev (chỉ mở trên 127.0.0.1)
+(cd backend && ./mvnw spring-boot:run)           # API: http://localhost:8080 (Flyway tự tạo bảng)
+(cd frontend && npm ci && npm run dev)           # web: http://localhost:3000 (cửa sổ terminal khác)
 ```
 
 | Lệnh | Việc |
 |---|---|
-| `npm test` | Unit test + test phân quyền dữ liệu (cần `DATABASE_URL`) |
-| `npm run typecheck` / `npm run lint` | Kiểm tra kiểu / lint |
-| `npm run db:generate` | Sinh migration sau khi sửa `src/db/schema.ts` |
-| `npm run build` | Build web + worker |
+| `cd backend && ./mvnw test` | Unit test + test tích hợp (Testcontainers, cần Docker) |
+| `cd backend && ./mvnw spring-boot:run` | Chạy API; thêm `API_DOCS_ENABLED=true` để mở Swagger UI |
+| `cd frontend && npm run lint && npm run typecheck` | Kiểm tra frontend |
+| `cd frontend && npm run build` | Build web |
 
-Công nghệ: Next.js 16, TypeScript, Tailwind CSS 4, Drizzle ORM + PostgreSQL, Better Auth (Google), grammY (Telegram), Vitest.
+Công nghệ: Spring Boot 4.1 · Java 25 · Spring Security (Google OIDC) · Spring Data JPA · Flyway · PostgreSQL 17 · Next.js 16 · React 19 · Tailwind CSS 4.
 
 ## Phát hành
 
-Tạo tag `vX.Y.Z` trên `main` → GitHub Actions test, quét bí mật & lỗ hổng, build `linux/amd64` + `linux/arm64` và đẩy lên Docker Hub.
+Tạo tag `vX.Y.Z` trên `main` → GitHub Actions quét bí mật & lỗ hổng, build 2 image (`workbench`, `workbench-api`) cho `linux/amd64` + `linux/arm64` và đẩy lên Docker Hub.
 
 ## Bảo mật
 
