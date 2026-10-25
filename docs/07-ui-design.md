@@ -186,8 +186,8 @@ Chữ trên nền đều đạt tương phản WCAG AA (≥ 4.5:1), riêng `dang
 | `CatInBox` — mèo trong thùng | trang 404 |
 | `SittingKitten` (`components/kitten.tsx`) — bé mèo mướp xám mắt xanh, ảnh tĩnh | thẻ **mèo nhắc việc** (`components/cat-reminder.tsx`), thẻ Cài đặt |
 
-**Mèo nhắc việc:** thỉnh thoảng hiện ở góc dưới phải một thẻ có hình bé mèo mướp (ảnh tĩnh — không chuyển động) kèm
-lời nhắc task quá hạn (ưu tiên cao nhất trước) hoặc task đến hạn trong 24 giờ; nút **Xem ngay** (mở task) / **Để sau**
+**Mèo nhắc việc:** thỉnh thoảng bé mèo mướp (ảnh tĩnh — không chuyển động) hiện ở góc dưới phải, lời nhắc nằm trong
+bong bóng thoại ngay trên đầu mèo (đuôi bong bóng chỉ xuống giữa đầu mèo) — task quá hạn (ưu tiên cao nhất trước) hoặc task đến hạn trong 24 giờ; nút **Xem ngay** (mở task) / **Để sau**
 (2 giờ nữa mới hiện lại); không ai bấm thì 25 giây sau tự ẩn. Hiện sớm nhất 8 giây sau khi mở app, cách nhau ≥ 45 phút,
 chỉ khi tab đang mở và không có hộp thoại. Bật / tắt và "Gọi mèo ra ngay" ở **Cài đặt** — lưu trong `localStorage`
 của từng thiết bị.
