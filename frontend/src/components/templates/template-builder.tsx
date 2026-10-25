@@ -5,30 +5,31 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { saveTemplateAction } from "@/actions/templates";
 import { Button, Card, Field, Input, Notice, Select, Textarea } from "@/components/ui";
-import { PRIORITIES, PRIORITY_LABEL, type PriorityValue } from "@/core/priority";
+import { PRIORITIES, type PriorityValue } from "@/core/priority";
 import {
   ANCHOR_SUBMITTED,
   BUILTIN_VARIABLES,
   FIELD_TYPES,
-  FIELD_TYPE_LABEL,
   type FieldType,
   type TemplateField,
   type TemplateInput,
   type TemplateRule,
 } from "@/core/template-schema";
+import { useI18n } from "@/i18n/provider";
 
 type FieldDraft = TemplateField & { uid: string; keyEdited: boolean; optionsText: string };
 type RuleDraft = TemplateRule & { subtasksText: string; tagsText: string };
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
-/** "Hạn nộp báo cáo" → "han_nop_bao_cao" */
+/** "Hạn nộp báo cáo" → "han_nop_bao_cao", "Größe" → "grosse" (bỏ dấu, ß → ss) */
 export function slugifyKey(label: string): string {
   const s = label
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/đ/g, "d")
     .replace(/Đ/g, "d")
+    .replace(/ß/g, "ss")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "")
@@ -59,6 +60,8 @@ function newRule(fields: FieldDraft[]): RuleDraft {
 }
 
 export function TemplateBuilder({ initial, id }: { initial?: TemplateInput; id?: string }) {
+  const { t } = useI18n();
+  const b = t.builder;
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [fields, setFields] = useState<FieldDraft[]>(() => (initial?.fields ?? []).map(toFieldDraft));
@@ -138,13 +141,13 @@ export function TemplateBuilder({ initial, id }: { initial?: TemplateInput; id?:
 
   const errorFor = (prefix: string) => errors.find((e) => e.path === prefix || e.path.startsWith(`${prefix}.`))?.message;
   const dateFields = fields.filter((f) => (f.type === "DATE" || f.type === "DATETIME") && f.key);
-  const variables = [...fields.filter((f) => f.key).map((f) => ({ key: f.key, label: f.label || f.key })), ...Object.entries(BUILTIN_VARIABLES).map(([key, label]) => ({ key, label }))];
+  const variables = [...fields.filter((f) => f.key).map((f) => ({ key: f.key, label: f.label || f.key })), ...BUILTIN_VARIABLES.map((key) => ({ key, label: t.builtinVariables[key] }))];
 
   return (
     <div className="space-y-8">
       {errors.length > 0 && (
         <Notice tone="danger">
-          <p className="mb-1">Chưa lưu được — kiểm tra lại:</p>
+          <p className="mb-1">{b.saveFailed}</p>
           <ul className="list-disc pl-5">
             {[...new Set(errors.map((e) => e.message))].map((m) => (
               <li key={m}>{m}</li>
@@ -154,62 +157,62 @@ export function TemplateBuilder({ initial, id }: { initial?: TemplateInput; id?:
       )}
 
       <Card className="space-y-4 p-6">
-        <h2 className="text-lg font-bold">1. Thông tin</h2>
+        <h2 className="text-lg font-bold">{b.infoTitle}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Tên form mẫu" error={errorFor("name")}>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ví dụ: Báo cáo tuần" maxLength={100} />
+          <Field label={b.name} error={errorFor("name")}>
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={b.namePlaceholder} maxLength={100} />
           </Field>
-          <Field label="Mô tả ngắn">
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Dùng khi nào?" maxLength={1000} />
+          <Field label={b.description}>
+            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder={b.descriptionPlaceholder} maxLength={1000} />
           </Field>
         </div>
       </Card>
 
       <Card className="space-y-4 p-6">
         <div>
-          <h2 className="text-lg font-bold">2. Các trường trong form</h2>
-          <p className="text-sm text-fg-2">Những gì bạn cần điền mỗi lần dùng form. Dùng trong task bằng cú pháp {"{{mã_trường}}"}.</p>
+          <h2 className="text-lg font-bold">{b.fieldsTitle}</h2>
+          <p className="text-sm text-fg-2">{b.fieldsHint}</p>
         </div>
-        {fields.length === 0 && <p className="text-sm text-fg-2">Chưa có trường nào — form không cần điền gì cũng được.</p>}
+        {fields.length === 0 && <p className="text-sm text-fg-2">{b.noFields}</p>}
         <div className="space-y-3">
           {fields.map((f, i) => (
             <div key={f.uid} className="space-y-3 rounded-2xl border border-line p-4">
               <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_auto_auto] md:items-end">
-                <Field label="Tên trường" error={errorFor(`fields.${i}.label`)}>
-                  <Input value={f.label} onChange={(e) => updateField(i, { label: e.target.value })} placeholder="Hạn nộp" maxLength={80} />
+                <Field label={b.fieldLabel} error={errorFor(`fields.${i}.label`)}>
+                  <Input value={f.label} onChange={(e) => updateField(i, { label: e.target.value })} placeholder={b.fieldLabelPlaceholder} maxLength={80} />
                 </Field>
-                <Field label="Mã" error={errorFor(`fields.${i}.key`)}>
+                <Field label={b.fieldKey} error={errorFor(`fields.${i}.key`)}>
                   <Input
                     value={f.key}
                     onChange={(e) => updateField(i, { key: e.target.value.toLowerCase(), keyEdited: true })}
-                    placeholder="han_nop"
+                    placeholder={b.fieldKeyPlaceholder}
                     className="font-mono text-[13px]"
                   />
                 </Field>
-                <Field label="Kiểu">
+                <Field label={b.fieldType}>
                   <Select value={f.type} onChange={(e) => updateField(i, { type: e.target.value as FieldType })}>
-                    {FIELD_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {FIELD_TYPE_LABEL[t]}
+                    {FIELD_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {t.fieldTypes[type]}
                       </option>
                     ))}
                   </Select>
                 </Field>
                 <label className="flex items-center gap-2 pb-3 text-sm">
                   <input type="checkbox" checked={f.required} onChange={(e) => updateField(i, { required: e.target.checked })} className="h-4 w-4" />
-                  Bắt buộc
+                  {b.required}
                 </label>
-                <button type="button" onClick={() => removeField(i)} aria-label="Xoá trường" className="mb-2 flex h-9 w-9 items-center justify-center rounded-full text-fg-2 hover:bg-danger/10 hover:text-danger">
+                <button type="button" onClick={() => removeField(i)} aria-label={b.removeField} className="mb-2 flex h-9 w-9 items-center justify-center rounded-full text-fg-2 hover:bg-danger/10 hover:text-danger">
                   <Trash size={16} />
                 </button>
               </div>
               {f.type === "SELECT" && (
-                <Field label="Các lựa chọn" hint="Mỗi dòng một lựa chọn" error={errorFor(`fields.${i}.options`)}>
-                  <Textarea value={f.optionsText} onChange={(e) => updateField(i, { optionsText: e.target.value })} className="min-h-20" placeholder={"Trực tiếp\nOnline"} />
+                <Field label={b.options} hint={b.optionsHint} error={errorFor(`fields.${i}.options`)}>
+                  <Textarea value={f.optionsText} onChange={(e) => updateField(i, { optionsText: e.target.value })} className="min-h-20" placeholder={b.optionsPlaceholder} />
                 </Field>
               )}
               {f.type !== "CHECKBOX" && (
-                <Field label="Giá trị mặc định (tuỳ chọn)">
+                <Field label={b.defaultValue}>
                   <Input
                     value={f.defaultValue}
                     onChange={(e) => updateField(i, { defaultValue: e.target.value })}
@@ -221,14 +224,14 @@ export function TemplateBuilder({ initial, id }: { initial?: TemplateInput; id?:
           ))}
         </div>
         <Button variant="secondary" size="sm" onClick={addField}>
-          <Plus size={15} /> Thêm trường
+          <Plus size={15} /> {b.addField}
         </Button>
       </Card>
 
       <Card className="space-y-4 p-6">
         <div>
-          <h2 className="text-lg font-bold">3. Task sẽ được tạo</h2>
-          <p className="text-sm text-fg-2">Mỗi mục bên dưới thành một task khi bạn điền form.</p>
+          <h2 className="text-lg font-bold">{b.rulesTitle}</h2>
+          <p className="text-sm text-fg-2">{b.rulesHint}</p>
         </div>
         <div className="space-y-4">
           {rules.map((r, i) => (
@@ -247,16 +250,16 @@ export function TemplateBuilder({ initial, id }: { initial?: TemplateInput; id?:
           ))}
         </div>
         <Button variant="secondary" size="sm" onClick={() => setRules((all) => [...all, newRule(fields)])}>
-          <Plus size={15} /> Thêm task
+          <Plus size={15} /> {b.addRule}
         </Button>
       </Card>
 
       <div className="flex justify-end gap-2">
         <Link href="/templates" className="rounded-full border border-line-strong px-6 py-3 text-sm font-semibold hover:bg-hover">
-          Huỷ
+          {t.common.cancel}
         </Link>
         <Button onClick={save} disabled={pending}>
-          {pending ? "Đang lưu…" : "Lưu form mẫu"}
+          {pending ? t.common.saving : b.save}
         </Button>
       </div>
     </div>
@@ -284,15 +287,17 @@ function RuleEditor({
   onChange: (patch: Partial<RuleDraft>) => void;
   onRemove: () => void;
 }) {
+  const { t } = useI18n();
+  const b = t.builder;
   const setDue = (patch: Partial<TemplateRule["due"]>) => onChange({ due: { ...rule.due, ...patch } });
   const condField = rule.condition ? fields.find((f) => f.key === rule.condition!.field) : undefined;
 
   return (
     <div className="space-y-4 rounded-2xl border border-line p-5">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-bold text-fg-2">Task {index + 1}</span>
+        <span className="text-sm font-bold text-fg-2">{b.ruleNumber(index + 1)}</span>
         {canRemove && (
-          <button type="button" onClick={onRemove} aria-label="Xoá task" className="flex h-8 w-8 items-center justify-center rounded-full text-fg-2 hover:bg-danger/10 hover:text-danger">
+          <button type="button" onClick={onRemove} aria-label={b.removeRule} className="flex h-8 w-8 items-center justify-center rounded-full text-fg-2 hover:bg-danger/10 hover:text-danger">
             <X size={16} />
           </button>
         )}
@@ -300,8 +305,8 @@ function RuleEditor({
 
       {error && <Notice tone="danger">{error}</Notice>}
 
-      <Field label="Tiêu đề task">
-        <Input value={rule.title} onChange={(e) => onChange({ title: e.target.value })} placeholder="Viết báo cáo tuần {{tuan}}" maxLength={200} />
+      <Field label={b.ruleTitle}>
+        <Input value={rule.title} onChange={(e) => onChange({ title: e.target.value })} placeholder={b.ruleTitlePlaceholder} maxLength={200} />
       </Field>
       <div className="flex flex-wrap gap-1.5">
         {variables.map((v) => (
@@ -309,7 +314,7 @@ function RuleEditor({
             key={v.key}
             type="button"
             onClick={() => onChange({ title: `${rule.title}${rule.title && !rule.title.endsWith(" ") ? " " : ""}{{${v.key}}}` })}
-            title={`Chèn ${v.label}`}
+            title={b.insertVariable(v.label)}
             className="rounded-full bg-hover px-2.5 py-1 font-mono text-xs text-fg-2 hover:text-fg"
           >
             {`{{${v.key}}}`}
@@ -317,37 +322,37 @@ function RuleEditor({
         ))}
       </div>
 
-      <Field label="Mô tả (tuỳ chọn)">
+      <Field label={b.ruleDescription}>
         <Textarea value={rule.description} onChange={(e) => onChange({ description: e.target.value })} className="min-h-16" />
       </Field>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <Field label="Ưu tiên">
+        <Field label={b.priority}>
           <Select value={rule.priority} onChange={(e) => onChange({ priority: e.target.value as PriorityValue })}>
             {PRIORITIES.map((p) => (
               <option key={p} value={p}>
-                {PRIORITY_LABEL[p]}
+                {t.priority[p]}
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Hạn chót tính từ">
+        <Field label={b.dueFrom}>
           <Select value={rule.due.anchor ?? ""} onChange={(e) => setDue({ anchor: e.target.value || null })}>
-            <option value="">Không có hạn</option>
-            <option value={ANCHOR_SUBMITTED}>Lúc điền form</option>
+            <option value="">{b.noDue}</option>
+            <option value={ANCHOR_SUBMITTED}>{b.whenSubmitted}</option>
             {dateFields.map((f) => (
               <option key={f.uid} value={f.key}>
-                Trường “{f.label || f.key}”
+                {b.fieldAnchor(f.label || f.key)}
               </option>
             ))}
           </Select>
         </Field>
         {rule.due.anchor && (
           <>
-            <Field label="Cộng / trừ ngày" hint="Số âm = trước mốc">
+            <Field label={b.offsetDays} hint={b.offsetDaysHint}>
               <Input type="number" min={-365} max={365} value={rule.due.offsetDays} onChange={(e) => setDue({ offsetDays: Number(e.target.value) || 0 })} />
             </Field>
-            <Field label="Lúc (giờ)" hint="Để trống = giữ giờ của mốc">
+            <Field label={b.time} hint={b.timeHint}>
               <Input type="time" value={rule.due.time ?? ""} onChange={(e) => setDue({ time: e.target.value || null })} />
             </Field>
           </>
@@ -355,26 +360,26 @@ function RuleEditor({
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Chỉ tạo task khi">
+        <Field label={b.condition}>
           <Select
             value={rule.condition?.field ?? ""}
             onChange={(e) => onChange({ condition: e.target.value ? { field: e.target.value, equals: "" } : null })}
           >
-            <option value="">Luôn tạo</option>
+            <option value="">{b.always}</option>
             {fields
               .filter((f) => f.key)
               .map((f) => (
                 <option key={f.uid} value={f.key}>
-                  {f.type === "CHECKBOX" ? `“${f.label || f.key}” được tick` : `“${f.label || f.key}” …`}
+                  {f.type === "CHECKBOX" ? b.conditionChecked(f.label || f.key) : b.conditionField(f.label || f.key)}
                 </option>
               ))}
           </Select>
         </Field>
         {rule.condition && condField && condField.type !== "CHECKBOX" && (
-          <Field label="… có giá trị" hint="Để trống = chỉ cần có điền">
+          <Field label={b.conditionEquals} hint={b.conditionEqualsHint}>
             {condField.type === "SELECT" ? (
               <Select value={rule.condition.equals} onChange={(e) => onChange({ condition: { ...rule.condition!, equals: e.target.value } })}>
-                <option value="">(bất kỳ)</option>
+                <option value="">{b.anyValue}</option>
                 {condField.optionsText
                   .split(/\n|,/)
                   .map((s) => s.trim())
@@ -393,11 +398,11 @@ function RuleEditor({
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <Field label="Task con (tuỳ chọn)" hint="Mỗi dòng một task con">
+        <Field label={b.subtasks} hint={b.subtasksHint}>
           <Textarea value={rule.subtasksText} onChange={(e) => onChange({ subtasksText: e.target.value })} className="min-h-20" />
         </Field>
-        <Field label="Nhãn (tuỳ chọn)" hint="Cách nhau bằng dấu phẩy">
-          <Input value={rule.tagsText} onChange={(e) => onChange({ tagsText: e.target.value })} placeholder="báo cáo" />
+        <Field label={b.tags} hint={b.tagsHint}>
+          <Input value={rule.tagsText} onChange={(e) => onChange({ tagsText: e.target.value })} placeholder={b.tagsPlaceholder} />
         </Field>
       </div>
     </div>

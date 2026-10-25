@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 
 import lombok.RequiredArgsConstructor;
 
+import io.github.son30kins.workbench.application.i18n.Translator;
 import io.github.son30kins.workbench.application.template.TemplateService;
 import io.github.son30kins.workbench.domain.shared.NotFoundException;
 import io.github.son30kins.workbench.domain.template.TemplateDefinition;
@@ -40,6 +41,8 @@ class TemplateController {
 
 	private final TemplateService templates;
 
+	private final Translator translator;
+
 	@GetMapping("/templates")
 	List<TemplateResponse> list(CurrentUser user) {
 		return templates.list(user.id()).stream().map(TemplateResponse::from).toList();
@@ -66,7 +69,9 @@ class TemplateController {
 	@PostMapping("/templates/{id}/duplicate")
 	@ResponseStatus(HttpStatus.CREATED)
 	TemplateResponse duplicate(CurrentUser user, @PathVariable UUID id) {
-		return templates.duplicate(user.id(), id).map(TemplateResponse::from).orElseThrow(TemplateController::notFound);
+		return templates.duplicate(user.context(), id)
+			.map(TemplateResponse::from)
+			.orElseThrow(TemplateController::notFound);
 	}
 
 	@DeleteMapping("/templates/{id}")
@@ -82,7 +87,7 @@ class TemplateController {
 	TemplatePreviewResponse preview(CurrentUser user, @PathVariable UUID id,
 			@Valid @RequestBody FormValuesRequest request) {
 		return templates.preview(user.context(), id, request.values())
-			.map(TemplatePreviewResponse::from)
+			.map(plan -> TemplatePreviewResponse.from(plan, plan.warnings().stream().map(translator::get).toList()))
 			.orElseThrow(TemplateController::notFound);
 	}
 
@@ -104,7 +109,7 @@ class TemplateController {
 	}
 
 	private static NotFoundException notFound() {
-		return new NotFoundException("Không tìm thấy template");
+		return new NotFoundException("error.template.notFound");
 	}
 
 }

@@ -17,7 +17,8 @@ import { Plus } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { moveTaskAction } from "@/actions/tasks";
 import { SleepingCat } from "@/components/cats";
-import { BOARD_STATUSES, STATUS_LABEL, type StatusValue } from "@/core/priority";
+import { BOARD_STATUSES, type StatusValue } from "@/core/priority";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 import { compareTasks, type TaskDTO } from "./task-bits";
 import { TaskCard } from "./task-card";
@@ -120,28 +121,29 @@ function Column({
   onAdd: () => void;
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   const { setNodeRef, isOver } = useDroppable({ id: status });
   return (
     <section
       ref={setNodeRef}
-      aria-label={STATUS_LABEL[status]}
+      aria-label={t.status[status]}
       className={cn(
         "flex min-h-[420px] flex-col rounded-2xl border border-dashed border-line-strong bg-column p-4 transition",
         isOver && "border-brand bg-brand/5",
       )}
     >
       <div className="mb-4 flex items-center justify-between px-1">
-        <h2 className="flex items-center gap-2 text-sm font-bold text-fg-2">
+        <h2 className="flex items-center gap-2 whitespace-nowrap text-sm font-bold text-fg-2">
           <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-full bg-blush text-sm">
             {COLUMN_ICON[status]}
           </span>
-          {STATUS_LABEL[status]} ({count})
+          {t.status[status]} ({count})
         </h2>
-        <button type="button" onClick={onAdd} className="flex items-center gap-1.5 text-sm font-semibold hover:text-brand">
+        <button type="button" onClick={onAdd} className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold hover:text-brand">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-hover">
             <Plus size={12} />
           </span>
-          Thêm task
+          {t.board.addTask}
         </button>
       </div>
       <div className="flex flex-1 flex-col gap-4">
@@ -153,7 +155,7 @@ function Column({
           )}
         >
           {count === 0 && <SleepingCat className="w-28" />}
-          Kéo task vào đây…
+          {t.board.dropHere}
         </div>
       </div>
     </section>

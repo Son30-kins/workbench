@@ -67,8 +67,9 @@ public class Template {
 	}
 
 	/** Bản sao với tên "… (bản sao)", tối đa 100 ký tự. */
-	public TemplateDefinition copyDefinition() {
-		var copyName = name + " (bản sao)";
+	/** @param copySuffix hậu tố theo ngôn ngữ người dùng, ví dụ " (bản sao)" */
+	public TemplateDefinition copyDefinition(String copySuffix) {
+		var copyName = name + copySuffix;
 		return new TemplateDefinition(copyName.length() > 100 ? copyName.substring(0, 100) : copyName, description,
 				fields, rules);
 	}

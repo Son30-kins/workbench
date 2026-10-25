@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Board } from "@/components/tasks/board";
 import { TasksToolbar } from "@/components/tasks/toolbar";
+import { getI18n } from "@/i18n/server";
 import { getTask, listTasks, TASK_VIEWS, type TaskView } from "@/server/queries";
 import { requireUser } from "@/server/session";
 
-export const metadata: Metadata = { title: "Bảng công việc" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t.meta.board };
+}
 
 export default async function BoardPage({ searchParams }: PageProps<"/">) {
   const user = await requireUser();

@@ -1,6 +1,9 @@
+"use client";
+
 import { Flag } from "lucide-react";
-import { PRIORITY_LABEL, PRIORITY_RANK, type PriorityValue } from "@/core/priority";
+import { PRIORITY_RANK, type PriorityValue } from "@/core/priority";
 import { formatInTz } from "@/core/time";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 import type { Task } from "@/lib/types";
 
@@ -14,10 +17,11 @@ const PRIORITY_STYLE: Record<PriorityValue, string> = {
 };
 
 export function PriorityBadge({ priority, className }: { priority: PriorityValue; className?: string }) {
+  const { t } = useI18n();
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold", PRIORITY_STYLE[priority], className)}>
       <Flag size={12} strokeWidth={2.4} />
-      {PRIORITY_LABEL[priority]}
+      {t.priority[priority]}
     </span>
   );
 }
@@ -41,15 +45,16 @@ const DUE_STYLE: Record<DueTone, string> = {
 };
 
 export function DueChip({ task, tz, now }: { task: Pick<Task, "dueAt" | "status">; tz: string; now: number }) {
-  if (!task.dueAt) return <span className="rounded-full bg-muted/10 px-4 py-2 text-[13px] font-medium text-muted">Không hạn</span>;
+  const { locale, t } = useI18n();
+  if (!task.dueAt) return <span className="rounded-full bg-muted/10 px-4 py-2 text-[13px] font-medium text-muted">{t.task.noDue}</span>;
   const tone = dueTone(task, now);
   const due = new Date(task.dueAt);
   return (
     <span
       className={cn("rounded-full px-4 py-2 text-[13px] font-medium", DUE_STYLE[tone])}
-      title={tone === "overdue" ? "Đã quá hạn" : tone === "soon" ? "Đến hạn trong 24 giờ" : undefined}
+      title={tone === "overdue" ? t.task.overdueTitle : tone === "soon" ? t.task.soonTitle : undefined}
     >
-      {formatInTz(due, tz, "dd/MM · HH:mm")}
+      {formatInTz(due, tz, t.formats.shortDateTime, locale)}
     </span>
   );
 }

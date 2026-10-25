@@ -12,10 +12,10 @@ import jakarta.validation.constraints.Size;
  * Compact constructor chuẩn hoá giá trị thiếu (JSON không có trường → mặc định).
  */
 public record TemplateField(
-		@NotNull(message = "Nhập mã trường") @Pattern(regexp = "^[a-z][a-z0-9_]{0,39}$",
-				message = "Mã trường: chữ thường không dấu, số, gạch dưới; bắt đầu bằng chữ") String key,
-		@NotBlank(message = "Nhập tên trường") @Size(max = 80) String label,
-		@NotNull(message = "Chọn kiểu trường") FieldType type,
+		@NotNull(message = "{validation.field.key}") @Pattern(regexp = "^[a-z][a-z0-9_]{0,39}$",
+				message = "{validation.field.keyPattern}") String key,
+		@NotBlank(message = "{validation.field.label}") @Size(max = 80) String label,
+		@NotNull(message = "{validation.field.type}") FieldType type,
 		boolean required,
 		@Size(max = 30) List<@NotBlank @Size(max = 80) String> options,
 		@Size(max = 500) String defaultValue) {

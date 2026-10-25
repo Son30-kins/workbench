@@ -12,6 +12,7 @@ App quản lý công việc tự host bằng Docker: điền **form mẫu** → 
 - **4 mức ưu tiên** — Khẩn cấp, Cao, Trung bình, Thấp — mỗi mức có lịch nhắc riêng.
 - **Nhắc việc qua Telegram** với nút ✅ Xong / ⏰ Hoãn ngay trong tin nhắn; nhắc lại khi quá hạn; bản tin buổi sáng; giờ yên lặng.
 - **Chuông thông báo** trong app, **Sáng / Tối**, dùng được trên điện thoại.
+- **3 ngôn ngữ — Tiếng Việt, English, Deutsch**: tự chọn theo trình duyệt, đổi ở góc trên hoặc trong Cài đặt; áp dụng cho cả thông báo lỗi, tin nhắn Telegram và 3 form mẫu mặc định của tài khoản mới.
 - **Quản trị**: người đăng nhập đầu tiên là admin; giới hạn email / tên miền được đăng nhập; khoá tài khoản.
 
 ## Cài đặt

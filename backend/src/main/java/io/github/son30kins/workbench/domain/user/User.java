@@ -20,6 +20,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
+import io.github.son30kins.workbench.domain.shared.Language;
+
 /**
  * Aggregate người dùng — tạo lần đầu khi đăng nhập Google. Trạng thái chỉ đổi qua các phương thức
  * nghiệp vụ (ban, changeRole…) chứ không có setter tự do.
@@ -55,6 +57,9 @@ public class User {
 	@JdbcTypeCode(SqlTypes.JSON)
 	private UserSettings settings;
 
+	/** Ngôn ngữ giao diện, thông báo và tin Telegram. */
+	private Language language = Language.DEFAULT;
+
 	private LocalDate lastDigestOn;
 
 	@CreationTimestamp
@@ -63,13 +68,15 @@ public class User {
 	@UpdateTimestamp
 	private Instant updatedAt;
 
-	public User(String googleSubject, String email, String name, String image, Role role, ZoneId timezone) {
+	public User(String googleSubject, String email, String name, String image, Role role, ZoneId timezone,
+			Language language) {
 		this.googleSubject = googleSubject;
 		this.email = email;
 		this.name = name;
 		this.image = image;
 		this.role = role;
 		this.timezone = timezone.getId();
+		this.language = language;
 	}
 
 	public void updateProfile(String email, String name, String image) {
@@ -81,6 +88,10 @@ public class User {
 	public void updatePreferences(ZoneId timezone, UserSettings settings) {
 		this.timezone = timezone.getId();
 		this.settings = settings;
+	}
+
+	public void changeLanguage(Language language) {
+		this.language = language;
 	}
 
 	public void ban() {
@@ -109,7 +120,7 @@ public class User {
 	}
 
 	public UserContext toContext() {
-		return new UserContext(id, getZone(), getEffectiveSettings());
+		return new UserContext(id, getZone(), getEffectiveSettings(), language);
 	}
 
 }

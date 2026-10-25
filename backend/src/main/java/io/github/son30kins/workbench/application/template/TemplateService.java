@@ -8,7 +8,9 @@ import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
 
+import io.github.son30kins.workbench.application.i18n.Translator;
 import io.github.son30kins.workbench.application.task.TaskService;
+import io.github.son30kins.workbench.domain.shared.Language;
 import io.github.son30kins.workbench.domain.shared.ValidationException;
 import io.github.son30kins.workbench.domain.task.TaskData;
 import io.github.son30kins.workbench.domain.task.TaskStatus;
@@ -35,6 +37,8 @@ public class TemplateService {
 
 	private final TaskService taskService;
 
+	private final Translator translator;
+
 	private final Clock clock;
 
 	@Transactional(readOnly = true)
@@ -60,9 +64,10 @@ public class TemplateService {
 		});
 	}
 
-	public Optional<Template> duplicate(UUID userId, UUID templateId) {
-		return templates.findOwned(templateId, userId)
-			.map(original -> templates.save(new Template(userId, original.copyDefinition())));
+	public Optional<Template> duplicate(UserContext owner, UUID templateId) {
+		var suffix = translator.get(owner.locale(), "template.copySuffix");
+		return templates.findOwned(templateId, owner.id())
+			.map(original -> templates.save(new Template(owner.id(), original.copyDefinition(suffix))));
 	}
 
 	public boolean delete(UUID userId, UUID templateId) {
@@ -94,9 +99,9 @@ public class TemplateService {
 		return templates.findRecentRuns(userId, limit);
 	}
 
-	/** Bộ form mặc định cho tài khoản mới. */
-	public void seedDefaults(UUID userId) {
-		DefaultTemplates.ALL.forEach(definition -> templates.save(new Template(userId, definition)));
+	/** Bộ form mặc định cho tài khoản mới, theo ngôn ngữ của người dùng. */
+	public void seedDefaults(UUID userId, Language language) {
+		DefaultTemplates.forLanguage(language).forEach(definition -> templates.save(new Template(userId, definition)));
 	}
 
 	private record Planned(Map<String, Object> values, TemplateEngine.Plan plan) {
@@ -108,7 +113,7 @@ public class TemplateService {
 			throw new InvalidFormValuesException(validated.errors());
 		}
 		return new Planned(validated.values(), TemplateEngine.plan(template.getFields(), template.getRules(),
-				validated.values(), owner.zone(), clock.instant()));
+				validated.values(), owner.zone(), clock.instant(), owner.language()));
 	}
 
 	private static void check(TemplateDefinition definition) {

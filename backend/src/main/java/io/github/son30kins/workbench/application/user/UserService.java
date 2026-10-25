@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import io.github.son30kins.workbench.application.task.TaskService;
 import io.github.son30kins.workbench.domain.shared.DomainException;
+import io.github.son30kins.workbench.domain.shared.Language;
 import io.github.son30kins.workbench.domain.shared.NotFoundException;
 import io.github.son30kins.workbench.domain.shared.TimeZones;
 import io.github.son30kins.workbench.domain.user.User;
@@ -33,12 +34,23 @@ public class UserService {
 	/** Lưu múi giờ + cài đặt nhắc việc, rồi tính lại lịch nhắc cho các task đang mở. */
 	public User updatePreferences(UUID userId, String timezone, UserSettings settings) {
 		if (!TimeZones.isValidZone(timezone)) {
-			throw new DomainException("Múi giờ không hợp lệ");
+			throw new DomainException("error.timezone");
 		}
-		var user = users.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+		var user = load(userId);
 		user.updatePreferences(ZoneId.of(timezone), settings);
 		tasks.rescheduleOpenTasks(user.toContext());
 		return user;
+	}
+
+	/** Ngôn ngữ giao diện + thông báo + tin Telegram. */
+	public User changeLanguage(UUID userId, Language language) {
+		var user = load(userId);
+		user.changeLanguage(language);
+		return user;
+	}
+
+	private User load(UUID userId) {
+		return users.findById(userId).orElseThrow(() -> new NotFoundException("error.user.notFound"));
 	}
 
 }

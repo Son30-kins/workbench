@@ -11,6 +11,7 @@ import io.github.son30kins.workbench.domain.reminder.Reminder;
 import io.github.son30kins.workbench.domain.reminder.ReminderKind;
 import io.github.son30kins.workbench.domain.reminder.ReminderRepository;
 import io.github.son30kins.workbench.application.notification.NotificationService;
+import io.github.son30kins.workbench.domain.shared.Language;
 import io.github.son30kins.workbench.domain.task.Priority;
 import io.github.son30kins.workbench.domain.task.TaskData;
 import io.github.son30kins.workbench.application.task.TaskService;
@@ -77,6 +78,18 @@ class ReminderDeliveryTests {
 			assertThat(r.getFireAt()).isAfter(Instant.now());
 		});
 		assertThat(notifications.inbox(owner.id()).items()).extracting("title").containsExactly("Quá hạn: Sắp quá hạn");
+	}
+
+	@Test
+	void thongBaoTheoNgonNguCuaNguoiNhan() {
+		var owner = fixtures.user(Role.USER, Language.DE).toContext();
+		var task = tasks.create(owner, TaskData.of("Miete zahlen", Instant.now().plus(Duration.ofDays(1)), Priority.LOW));
+		jdbc.update("update reminders set fire_at = now() - interval '1 minute' where task_id = ?", task.getId());
+
+		job.deliverDue();
+
+		assertThat(notifications.inbox(owner.id()).items()).extracting("title")
+			.containsExactly("Überfällig: Miete zahlen");
 	}
 
 }

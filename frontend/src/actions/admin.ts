@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getI18n } from "@/i18n/server";
 import { apiSend } from "@/server/api";
 import type { SimpleResult } from "./settings";
 
@@ -18,7 +19,7 @@ export async function saveAccessPolicyAction(input: {
   });
   if (!res.ok) return { ok: false, error: res.error.message };
   revalidatePath("/admin");
-  return { ok: true, message: "Đã lưu chính sách đăng nhập" };
+  return { ok: true, message: (await getI18n()).t.admin.policySaved };
 }
 
 export async function setBannedAction(userId: string, banned: boolean): Promise<SimpleResult> {

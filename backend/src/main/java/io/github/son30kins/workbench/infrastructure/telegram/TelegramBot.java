@@ -2,14 +2,17 @@ package io.github.son30kins.workbench.infrastructure.telegram;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import io.github.son30kins.workbench.application.i18n.Translator;
 import io.github.son30kins.workbench.application.notification.MessageFormatter;
 import io.github.son30kins.workbench.application.setting.AppSettingsService;
 import io.github.son30kins.workbench.application.telegram.TelegramCommandService;
+import io.github.son30kins.workbench.domain.shared.Language;
 
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
@@ -29,6 +32,8 @@ class TelegramBot implements SmartLifecycle {
 	private final TelegramCommandService commands;
 
 	private final AppSettingsService appSettings;
+
+	private final Translator translator;
 
 	private volatile boolean running;
 
@@ -87,10 +92,7 @@ class TelegramBot implements SmartLifecycle {
 				var me = client.api().getMe();
 				if (me.ok() && me.result() != null) {
 					appSettings.saveTelegramBot(me.result().username());
-					client.api()
-						.setMyCommands(new TelegramApi.SetMyCommands(
-								List.of(new TelegramApi.BotCommand("today", "Việc hôm nay và quá hạn"),
-										new TelegramApi.BotCommand("help", "Hướng dẫn"))));
+					registerCommands();
 					log.info("✓ Telegram bot @{} đã kết nối", me.result().username());
 					return;
 				}
@@ -101,6 +103,21 @@ class TelegramBot implements SmartLifecycle {
 			}
 			appSettings.saveTelegramBot(null);
 			sleep(Duration.ofSeconds(30));
+		}
+	}
+
+	/**
+	 * Mô tả lệnh trong menu "/" theo ngôn ngữ app Telegram của người dùng: bản không kèm mã ngôn ngữ (mặc định,
+	 * tiếng Việt) + một bản cho từng ngôn ngữ khác.
+	 */
+	private void registerCommands() {
+		for (var language : Language.values()) {
+			var locale = language.locale();
+			client.api()
+				.setMyCommands(new TelegramApi.SetMyCommands(
+						List.of(new TelegramApi.BotCommand("today", translator.get(locale, "telegram.command.today")),
+								new TelegramApi.BotCommand("help", translator.get(locale, "telegram.command.help"))),
+						language == Language.DEFAULT ? null : language.tag()));
 		}
 	}
 
@@ -124,36 +141,38 @@ class TelegramBot implements SmartLifecycle {
 		var space = text.indexOf(' ');
 		var command = (space < 0 ? text : text.substring(0, space)).split("@")[0]; // "/today@tenbot" → "/today"
 		var argument = space < 0 ? "" : text.substring(space + 1);
+		var from = message.from();
+		var clientLanguage = from == null ? null : from.languageCode();
 
 		var reply = switch (command) {
-			case "/start" -> commands.start(argument, chatId, message.from() == null ? null : message.from().username());
-			case "/help" -> commands.help();
-			case "/today" -> commands.today(chatId);
+			case "/start" -> commands.start(argument, chatId, from == null ? null : from.username(), clientLanguage);
+			case "/help" -> commands.help(chatId, clientLanguage);
+			case "/today" -> commands.today(chatId, clientLanguage);
 			default -> null; // bỏ qua tin nhắn thường
 		};
 		if (reply != null) {
-			client.sendHtml(chatId, reply, null);
+			client.sendHtml(chatId, reply, null, Locale.ROOT);
 		}
 	}
 
 	private void handleButton(TelegramApi.CallbackQuery callback) {
 		var chatId = String.valueOf(callback.message() != null ? callback.message().chat().id() : callback.from().id());
-		var result = commands.button(chatId, String.valueOf(callback.data()));
+		var result = commands.button(chatId, String.valueOf(callback.data()), callback.from().languageCode());
 		client.api()
 			.answerCallbackQuery(new TelegramApi.AnswerCallbackQuery(callback.id(), result.answer(),
 					result.alert() ? true : null));
 		if (result.markDone() && callback.message() != null) {
-			markDone(chatId, callback.message());
+			markDone(chatId, callback.message(), result.locale());
 		}
 	}
 
 	/** Sửa tin nhắc thành "✅ Đã xong"; không sửa được nội dung thì ít nhất gỡ các nút. */
-	private void markDone(String chatId, TelegramApi.Message message) {
+	private void markDone(String chatId, TelegramApi.Message message, Locale locale) {
 		var original = MessageFormatter.escapeHtml(message.text());
 		try {
 			client.api()
 				.editMessageText(new TelegramApi.EditMessageText(chatId, message.messageId(),
-						original + "\n\n✅ <b>Đã xong</b>", "HTML"));
+						original + "\n\n✅ <b>" + translator.get(locale, "telegram.markedDone") + "</b>", "HTML"));
 		}
 		catch (RuntimeException ex) {
 			try {

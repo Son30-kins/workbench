@@ -1,12 +1,7 @@
 export const PRIORITIES = ["URGENT", "HIGH", "MEDIUM", "LOW"] as const;
 export type PriorityValue = (typeof PRIORITIES)[number];
 
-export const PRIORITY_LABEL: Record<PriorityValue, string> = {
-  URGENT: "Khẩn cấp",
-  HIGH: "Cao",
-  MEDIUM: "Trung bình",
-  LOW: "Thấp",
-};
+// Tên hiển thị theo ngôn ngữ: t.priority / t.status (src/i18n/messages)
 
 /** Thứ tự sắp xếp: số nhỏ = ưu tiên cao */
 export const PRIORITY_RANK: Record<PriorityValue, number> = {
@@ -18,12 +13,5 @@ export const PRIORITY_RANK: Record<PriorityValue, number> = {
 
 export const STATUSES = ["TODO", "IN_PROGRESS", "DONE", "CANCELLED"] as const;
 export type StatusValue = (typeof STATUSES)[number];
-
-export const STATUS_LABEL: Record<StatusValue, string> = {
-  TODO: "Cần làm",
-  IN_PROGRESS: "Đang làm",
-  DONE: "Hoàn thành",
-  CANCELLED: "Đã huỷ",
-};
 
 export const BOARD_STATUSES = ["TODO", "IN_PROGRESS", "DONE"] as const satisfies readonly StatusValue[];

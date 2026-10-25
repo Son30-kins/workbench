@@ -3,11 +3,14 @@
 import { Bell, CalendarDays, LogOut, Search, Settings, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { markNotificationsReadAction } from "@/actions/settings";
 import { EmptyState } from "@/components/cats";
+import { LanguageMenu } from "@/components/language-switcher";
 import { formatInTz } from "@/core/time";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
+import { useClickOutside } from "@/lib/use-click-outside";
 import { useSignOut } from "./sidebar";
 
 type NotificationItem = { id: string; title: string; body: string; taskId: string | null; createdAt: Date; readAt: Date | null };
@@ -25,13 +28,15 @@ export function Header({
   todayLabel: string;
   tz: string;
 }) {
+  const { t } = useI18n();
   const firstName = user.name.split(" ").filter(Boolean).pop() ?? user.name;
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 px-4 pb-4 pt-6 md:px-8 md:pt-8">
-      <h1 className="text-xl font-bold">Xin chào, {firstName} 😺</h1>
-      <div className="flex items-center gap-2 md:gap-4">
+      <h1 className="text-xl font-bold">{t.header.greeting(firstName)}</h1>
+      <div className="flex items-center gap-1 md:gap-3">
         <SearchBox />
         <NotificationBell items={notifications} unread={unread} tz={tz} />
+        <LanguageMenu />
         <span className="hidden items-center gap-2 text-sm font-medium text-fg-2 lg:flex">
           <CalendarDays size={18} className="text-fg" /> {todayLabel}
         </span>
@@ -42,6 +47,7 @@ export function Header({
 }
 
 function SearchBox() {
+  const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -64,15 +70,15 @@ function SearchBox() {
           autoFocus
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Tìm task…"
-          aria-label="Tìm task"
+          placeholder={t.header.searchPlaceholder}
+          aria-label={t.header.searchLabel}
           className="mr-1 w-36 rounded-full border border-line-strong bg-card px-4 py-2 text-sm outline-none focus:border-brand md:w-56"
         />
       )}
       <button
         type={open ? "submit" : "button"}
         onClick={() => !open && setOpen(true)}
-        aria-label="Tìm kiếm"
+        aria-label={t.header.search}
         className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-hover"
       >
         <Search size={20} />
@@ -81,19 +87,8 @@ function SearchBox() {
   );
 }
 
-function useClickOutside<T extends HTMLElement>(onOutside: () => void) {
-  const ref = useRef<T>(null);
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onOutside();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onOutside]);
-  return ref;
-}
-
 function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; unread: number; tz: string }) {
+  const { locale, t } = useI18n();
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
   const ref = useClickOutside<HTMLDivElement>(() => setOpen(false));
@@ -109,7 +104,7 @@ function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; un
       <button
         type="button"
         onClick={toggle}
-        aria-label={unread ? `Thông báo (${unread} chưa đọc)` : "Thông báo"}
+        aria-label={unread ? t.header.notificationsUnread(unread) : t.header.notifications}
         aria-expanded={open}
         className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-hover"
       >
@@ -118,11 +113,11 @@ function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; un
       </button>
       {open && (
         <div className="absolute right-0 z-40 mt-2 w-80 overflow-hidden rounded-2xl border border-line bg-card shadow-xl">
-          <div className="border-b border-line px-4 py-3 text-sm font-semibold">Thông báo</div>
+          <div className="border-b border-line px-4 py-3 text-sm font-semibold">{t.header.notifications}</div>
           <ul className="max-h-96 overflow-y-auto thin-scroll">
             {items.length === 0 && (
               <li className="px-4 py-6">
-                <EmptyState size="sm">Chưa có thông báo — mèo đang ngủ ngon</EmptyState>
+                <EmptyState size="sm">{t.header.noNotifications}</EmptyState>
               </li>
             )}
             {items.map((n) => (
@@ -134,7 +129,7 @@ function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; un
                 >
                   <p className="text-sm font-semibold">{n.title}</p>
                   {n.body && <p className="mt-0.5 text-[13px] text-fg-2">{n.body}</p>}
-                  <p className="mt-1 text-xs text-fg-2">{formatInTz(new Date(n.createdAt), tz, "HH:mm dd/MM")}</p>
+                  <p className="mt-1 text-xs text-fg-2">{formatInTz(new Date(n.createdAt), tz, t.formats.notification, locale)}</p>
                 </Link>
               </li>
             ))}
@@ -146,13 +141,14 @@ function NotificationBell({ items, unread, tz }: { items: NotificationItem[]; un
 }
 
 function UserMenu({ user }: { user: { name: string; email: string; image: string | null; role: string } }) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useClickOutside<HTMLDivElement>(() => setOpen(false));
   const signOut = useSignOut();
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-label="Tài khoản" aria-expanded={open}>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-label={t.header.account} aria-expanded={open}>
         <Avatar name={user.name} image={user.image} />
       </button>
       {open && (
@@ -162,15 +158,15 @@ function UserMenu({ user }: { user: { name: string; email: string; image: string
             <p className="truncate text-xs text-fg-2">{user.email}</p>
           </div>
           <MenuLink href="/settings" icon={<Settings size={16} />} onClick={() => setOpen(false)}>
-            Cài đặt
+            {t.nav.settings}
           </MenuLink>
           {user.role === "ADMIN" && (
             <MenuLink href="/admin" icon={<ShieldCheck size={16} />} onClick={() => setOpen(false)}>
-              Quản trị
+              {t.nav.admin}
             </MenuLink>
           )}
           <button type="button" onClick={signOut} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-hover">
-            <LogOut size={16} /> Đăng xuất
+            <LogOut size={16} /> {t.nav.signOut}
           </button>
         </div>
       )}

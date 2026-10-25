@@ -86,12 +86,12 @@ class TaskController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	void toggleSubtask(CurrentUser user, @PathVariable UUID id, @RequestBody SubtaskDoneRequest request) {
 		if (!tasks.toggleSubtask(user.context(), id, request.done())) {
-			throw new NotFoundException("Không tìm thấy task con");
+			throw new NotFoundException("error.subtask.notFound");
 		}
 	}
 
 	private static NotFoundException notFound() {
-		return new NotFoundException("Không tìm thấy task");
+		return new NotFoundException("error.task.notFound");
 	}
 
 }

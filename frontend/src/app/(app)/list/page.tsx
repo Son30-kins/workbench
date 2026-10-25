@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { TaskTable } from "@/components/tasks/task-table";
 import { TasksToolbar } from "@/components/tasks/toolbar";
+import { getI18n } from "@/i18n/server";
 import { listTasks, TASK_VIEWS, type TaskView } from "@/server/queries";
 import { requireUser } from "@/server/session";
 
-export const metadata: Metadata = { title: "Danh sách" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getI18n()).t.meta.list };
+}
 
 export default async function ListPage({ searchParams }: PageProps<"/list">) {
   const user = await requireUser();

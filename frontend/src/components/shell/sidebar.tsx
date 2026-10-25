@@ -5,21 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo, PawPrint } from "@/components/cats";
 import { signOutAction } from "@/actions/settings";
+import { useI18n } from "@/i18n/provider";
+import type { Messages } from "@/i18n";
 import { cn } from "@/lib/cn";
 
-const NAV = [
-  { href: "/", icon: LayoutGrid, label: "Bảng công việc", short: "Bảng" },
-  { href: "/list", icon: ListTodo, label: "Danh sách", short: "Danh sách" },
-  { href: "/templates", icon: FileStack, label: "Form mẫu", short: "Form mẫu" },
-  { href: "/settings", icon: Settings, label: "Cài đặt", short: "Cài đặt" },
-];
-const ADMIN = { href: "/admin", icon: ShieldCheck, label: "Quản trị", short: "Quản trị" };
+function navItems(t: Messages["nav"], isAdmin: boolean) {
+  const items = [
+    { href: "/", icon: LayoutGrid, label: t.board, short: t.boardShort },
+    { href: "/list", icon: ListTodo, label: t.list, short: t.list },
+    { href: "/templates", icon: FileStack, label: t.templates, short: t.templates },
+    { href: "/settings", icon: Settings, label: t.settings, short: t.settings },
+  ];
+  return isAdmin ? [...items, { href: "/admin", icon: ShieldCheck, label: t.admin, short: t.admin }] : items;
+}
 
 function useNav(isAdmin: boolean) {
+  const { t } = useI18n();
   const pathname = usePathname();
-  const items = isAdmin ? [...NAV, ADMIN] : NAV;
+  const items = navItems(t.nav, isAdmin);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  return { items, isActive };
+  return { items, isActive, t };
 }
 
 export function useSignOut() {
@@ -27,7 +32,7 @@ export function useSignOut() {
 }
 
 export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
-  const { items, isActive } = useNav(isAdmin);
+  const { items, isActive, t } = useNav(isAdmin);
   const signOut = useSignOut();
 
   return (
@@ -37,7 +42,7 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
         <PawPrint className="h-2.5 w-2.5 opacity-60" />
         <PawPrint className="h-2.5 w-2.5 opacity-30" />
       </div>
-      <Link href="/" aria-label="Trang chủ" className="mb-10 transition hover:-rotate-6">
+      <Link href="/" aria-label={t.nav.home} className="mb-10 transition hover:-rotate-6">
         <Logo className="h-9 w-9 text-[#ffd9b8]" />
       </Link>
       <nav className="flex flex-1 flex-col items-center gap-3">
@@ -60,8 +65,8 @@ export function Sidebar({ isAdmin }: { isAdmin: boolean }) {
       <button
         type="button"
         onClick={signOut}
-        title="Đăng xuất"
-        aria-label="Đăng xuất"
+        title={t.nav.signOut}
+        aria-label={t.nav.signOut}
         className="flex h-12 w-12 items-center justify-center rounded-full text-white/50 transition hover:text-white"
       >
         <LogOut size={21} strokeWidth={1.8} />

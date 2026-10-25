@@ -36,8 +36,8 @@ public record UserSettings(
 			new QuietHours(true, "22:00", "07:00"), new Digest(true, "08:00"), 24);
 
 	/** Giờ yên lặng: không nhắc (trừ task khẩn cấp). Hỗ trợ khung qua nửa đêm, ví dụ 22:00 → 07:00. */
-	public record QuietHours(boolean enabled, @NotNull @Pattern(regexp = HHMM, message = "Giờ dạng HH:mm") String start,
-			@NotNull @Pattern(regexp = HHMM, message = "Giờ dạng HH:mm") String end) {
+	public record QuietHours(boolean enabled, @NotNull @Pattern(regexp = HHMM, message = "{validation.time}") String start,
+			@NotNull @Pattern(regexp = HHMM, message = "{validation.time}") String end) {
 
 		public LocalTime startTime() {
 			return LocalTime.parse(start);
@@ -49,7 +49,7 @@ public record UserSettings(
 	}
 
 	/** Bản tin buổi sáng: danh sách việc hôm nay + quá hạn, gửi lúc {@code time}. */
-	public record Digest(boolean enabled, @NotNull @Pattern(regexp = HHMM, message = "Giờ dạng HH:mm") String time) {
+	public record Digest(boolean enabled, @NotNull @Pattern(regexp = HHMM, message = "{validation.time}") String time) {
 
 		public LocalTime localTime() {
 			return LocalTime.parse(time);
@@ -61,7 +61,7 @@ public record UserSettings(
 	}
 
 	@JsonIgnore
-	@AssertTrue(message = "Cần lịch nhắc cho đủ 4 mức ưu tiên")
+	@AssertTrue(message = "{validation.settings.complete}")
 	public boolean isComplete() {
 		return reminderOffsets != null && reminderOffsets.keySet().containsAll(List.of(Priority.values()));
 	}

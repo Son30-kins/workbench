@@ -1,5 +1,6 @@
 package io.github.son30kins.workbench.application.telegram;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
@@ -25,12 +26,12 @@ public class TelegramNotificationService {
 	 * @return true nếu đã gửi; false nếu bot chưa cấu hình hoặc người dùng chưa liên kết
 	 * @throws TelegramGateway.TelegramException khi Telegram báo lỗi
 	 */
-	public boolean sendTo(UUID userId, String html, UUID taskId) {
+	public boolean sendTo(UUID userId, String html, UUID taskId, Locale locale) {
 		if (!telegram.enabled()) {
 			return false;
 		}
 		return links.chatOf(userId).map(chatId -> {
-			telegram.sendHtml(chatId, html, taskId == null ? null : taskId.toString());
+			telegram.sendHtml(chatId, html, taskId == null ? null : taskId.toString(), locale);
 			return true;
 		}).orElse(false);
 	}

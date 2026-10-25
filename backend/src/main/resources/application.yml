@@ -10,6 +10,11 @@ spring:
   threads:
     virtual:
       enabled: true
+  # Thông điệp cho người dùng: messages.properties (vi, mặc định), messages_en, messages_de
+  messages:
+    basename: messages
+    fallback-to-system-locale: false # ngôn ngữ lạ → tiếng Việt, không phụ thuộc locale của máy chủ
+    always-use-message-format: true # mọi chuỗi cùng một quy tắc: nháy đơn viết ''
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:5433/workbench}
     username: ${DATABASE_USER:workbench}

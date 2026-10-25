@@ -1,6 +1,7 @@
 "use client";
 
 import { BellRing, Ellipsis, ListChecks } from "lucide-react";
+import { useI18n } from "@/i18n/provider";
 import { cn } from "@/lib/cn";
 import { DueChip, PriorityBadge, ProgressBar, dueTone, type TaskDTO } from "./task-bits";
 
@@ -17,6 +18,7 @@ export function TaskCard({
   onOpen: () => void;
   dragging?: boolean;
 }) {
+  const { t } = useI18n();
   const done = task.subtasks.filter((s) => s.done).length;
   const total = task.subtasks.length;
   const subtitle = task.templateName ?? task.tags[0] ?? null;
@@ -38,7 +40,7 @@ export function TaskCard({
         <button
           type="button"
           onClick={onOpen}
-          aria-label="Mở chi tiết"
+          aria-label={t.task.openDetails}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line hover:bg-hover"
         >
           <Ellipsis size={16} />
@@ -49,17 +51,17 @@ export function TaskCard({
         <PriorityBadge priority={task.priority} />
         {tone === "soon" && (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-warning">
-            <BellRing size={13} /> Sắp đến hạn
+            <BellRing size={13} /> {t.task.dueSoon}
           </span>
         )}
-        {tone === "overdue" && <span className="text-xs font-semibold text-danger">Quá hạn</span>}
+        {tone === "overdue" && <span className="text-xs font-semibold text-danger">{t.task.overdue}</span>}
       </div>
 
       {total > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-2 text-fg-2">
-              <ListChecks size={15} className="text-fg" /> Tiến độ
+              <ListChecks size={15} className="text-fg" /> {t.task.progress}
             </span>
             <span className="font-semibold">
               {done}/{total}

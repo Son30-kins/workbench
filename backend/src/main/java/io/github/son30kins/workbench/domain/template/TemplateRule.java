@@ -17,9 +17,9 @@ import io.github.son30kins.workbench.domain.user.UserSettings;
 /** Quy tắc sinh một task từ dữ liệu form. Tiêu đề, mô tả, task con, nhãn đều dùng được {@code {{biến}}}. */
 public record TemplateRule(
 		@NotBlank @Size(max = 40) String id,
-		@NotBlank(message = "Nhập tiêu đề task") @Size(max = 200) String title,
+		@NotBlank(message = "{validation.rule.title}") @Size(max = 200) String title,
 		@Size(max = 5000) String description,
-		@NotNull(message = "Chọn mức ưu tiên") Priority priority,
+		@NotNull(message = "{validation.rule.priority}") Priority priority,
 		@NotNull @Valid Due due,
 		@Valid Condition condition,
 		@Size(max = 30) List<@NotBlank @Size(max = 200) String> subtasks,

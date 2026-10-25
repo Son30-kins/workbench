@@ -6,6 +6,7 @@ import type { TemplateInput } from "@/core/template-schema";
 import { formatInTz } from "@/core/time";
 import type { PlannedTask } from "@/lib/types";
 import { apiSend } from "@/server/api";
+import { getI18n } from "@/i18n/server";
 import { requireUser } from "@/server/session";
 
 export type SaveTemplateResult = { ok: false; errors: { path: string; message: string }[] } | undefined;
@@ -49,7 +50,7 @@ export type PreviewActionResult =
 type Values = Record<string, string | boolean>;
 
 export async function previewTemplateAction(templateId: string, values: Values): Promise<PreviewActionResult> {
-  const user = await requireUser();
+  const [user, { locale, t }] = await Promise.all([requireUser(), getI18n()]);
   const res = await apiSend<{ tasks: PlannedTask[]; warnings: string[] }>(
     "POST",
     `/api/templates/${encodeURIComponent(templateId)}/preview`,
@@ -59,13 +60,13 @@ export async function previewTemplateAction(templateId: string, values: Values):
   return {
     ok: true,
     warnings: res.data.warnings,
-    tasks: res.data.tasks.map((t) => ({
-      title: t.title,
-      description: t.description,
-      priority: t.priority,
-      due: t.dueAt ? formatInTz(new Date(t.dueAt), user.timezone, "EEEE dd/MM/yyyy HH:mm") : null,
-      subtasks: t.subtasks,
-      tags: t.tags,
+    tasks: res.data.tasks.map((task) => ({
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      due: task.dueAt ? formatInTz(new Date(task.dueAt), user.timezone, t.formats.weekdayDateTime, locale) : null,
+      subtasks: task.subtasks,
+      tags: task.tags,
     })),
   };
 }

@@ -50,7 +50,7 @@ public class AdminService {
 	/** Khoá → đăng xuất khỏi mọi thiết bị ngay. */
 	public void setBanned(UUID adminId, UUID targetId, boolean banned) {
 		if (adminId.equals(targetId)) {
-			throw new DomainException("Không thể tự khoá tài khoản của mình");
+			throw new DomainException("error.admin.selfBan");
 		}
 		var user = find(targetId);
 		if (banned) {
@@ -64,17 +64,17 @@ public class AdminService {
 
 	public void setRole(UUID adminId, UUID targetId, Role role) {
 		if (adminId.equals(targetId)) {
-			throw new DomainException("Không thể tự đổi quyền của mình");
+			throw new DomainException("error.admin.selfRole");
 		}
 		var user = find(targetId);
 		if (role == Role.USER && user.isAdmin() && users.countAdmins() <= 1) {
-			throw new DomainException("Cần ít nhất 1 admin");
+			throw new DomainException("error.admin.lastAdmin");
 		}
 		user.changeRole(role);
 	}
 
 	private User find(UUID userId) {
-		return users.findById(userId).orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+		return users.findById(userId).orElseThrow(() -> new NotFoundException("error.user.notFound"));
 	}
 
 }

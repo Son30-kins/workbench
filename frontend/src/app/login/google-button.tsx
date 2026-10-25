@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/i18n/provider";
 
 /**
  * Chuyển sang Spring Security: /api/auth/signin/google → Google → /api/auth/callback/google → trang chủ.
- * Next.js chỉ chuyển tiếp (rewrite) các đường dẫn /api/auth/* sang API.
+ * Route Handler app/api/auth/[...path] chuyển tiếp các đường dẫn /api/auth/* sang API.
  */
 export function GoogleSignInButton() {
+  const { t } = useI18n();
   const [pending, setPending] = useState(false);
 
   return (
@@ -18,7 +20,7 @@ export function GoogleSignInButton() {
       className="flex w-full items-center justify-center gap-3 rounded-full border border-line-strong bg-card px-6 py-3.5 font-semibold transition hover:bg-hover aria-disabled:opacity-60"
     >
       <GoogleLogo />
-      {pending ? "Đang chuyển tới Google…" : "Đăng nhập bằng Google"}
+      {pending ? t.login.redirecting : t.login.google}
     </a>
   );
 }
