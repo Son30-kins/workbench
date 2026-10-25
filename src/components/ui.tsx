@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
 
@@ -61,8 +62,18 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
   },
 );
 
+// appearance-none + mũi tên tự vẽ: select gốc của trình duyệt tự thêm padding nên chữ lệch so với Input
 export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cn(fieldBase, "appearance-auto pr-8", className)} {...props} />;
+  return (
+    <div className="relative">
+      <select className={cn(fieldBase, "cursor-pointer appearance-none pr-10", className)} {...props} />
+      <ChevronDown
+        size={16}
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-fg-2"
+      />
+    </div>
+  );
 }
 
 export function Field({
