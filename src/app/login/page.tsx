@@ -62,25 +62,26 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   );
 }
 
+const ILLUSTRATION_COLUMNS = [
+  [["w-3/4", "bg-danger"], ["w-2/3", "bg-warning"]],
+  [["w-4/5", "bg-warning"], ["w-1/2", "bg-brand"]],
+  [["w-2/3", "bg-success"], ["w-3/4", "bg-success"]],
+];
+
 function BoardIllustration() {
-  const card = (w: string, color: string) => (
-    <div className="space-y-2 rounded-xl bg-white/[0.06] p-3">
-      <div className={`h-2 rounded-full bg-white/70 ${w}`} />
-      <div className="h-1.5 w-1/2 rounded-full bg-white/25" />
-      <div className="h-1 rounded-full bg-white/10">
-        <div className={`h-1 rounded-full ${color}`} style={{ width: "60%" }} />
-      </div>
-    </div>
-  );
   return (
     <div aria-hidden className="grid max-w-md grid-cols-3 gap-3">
-      {[
-        [card("w-3/4", "bg-danger"), card("w-2/3", "bg-warning")],
-        [card("w-4/5", "bg-warning"), card("w-1/2", "bg-brand")],
-        [card("w-2/3", "bg-success"), card("w-3/4", "bg-success")],
-      ].map((col, i) => (
+      {ILLUSTRATION_COLUMNS.map((col, i) => (
         <div key={i} className="space-y-3 rounded-2xl border border-white/10 p-2">
-          {col}
+          {col.map(([w, color], j) => (
+            <div key={j} className="space-y-2 rounded-xl bg-white/[0.06] p-3">
+              <div className={`h-2 rounded-full bg-white/70 ${w}`} />
+              <div className="h-1.5 w-1/2 rounded-full bg-white/25" />
+              <div className="h-1 rounded-full bg-white/10">
+                <div className={`h-1 rounded-full ${color}`} style={{ width: "60%" }} />
+              </div>
+            </div>
+          ))}
         </div>
       ))}
     </div>
