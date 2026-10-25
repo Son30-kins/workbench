@@ -43,6 +43,8 @@ docker compose -f docker-compose.dev.yml up -d   # Postgres cho dev (chỉ mở 
 (cd frontend && npm ci && npm run dev)           # web: http://localhost:3000 (cửa sổ terminal khác)
 ```
 
+Dùng Claude Code (macOS) thì gõ `/start-web` để bật cả database, API và web một lần, `/end-web` để tắt (giữ dữ liệu) — xem [.claude/skills/](.claude/skills/).
+
 | Lệnh | Việc |
 |---|---|
 | `cd backend && ./mvnw test` | Unit test + test tích hợp (Testcontainers, cần Docker) |
