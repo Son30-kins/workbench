@@ -15,7 +15,8 @@ App quản lý công việc tự host bằng Docker, nhiều người dùng (đ�
 | 7 | [07-ui-design.md](07-ui-design.md) | Thiết kế giao diện (theo Figma), design tokens |
 | 8 | [08-dong-goi-docker.md](08-dong-goi-docker.md) | Đóng gói Docker, cấu hình, phát hành image |
 | 9 | [09-git-va-bao-mat.md](09-git-va-bao-mat.md) | Quy trình Git, quản lý & bảo vệ key bí mật |
-| 10 | [10-backend-spring-boot.md](10-backend-spring-boot.md) | Backend Spring Boot: 4 tầng DDD, luồng request, cách thêm tính năng, Lombok |
+| 10 | [10-backend-spring-boot.md](10-backend-spring-boot.md) | Backend Spring Boot: 4 tầng DDD, luồng request, cách thêm tính năng, Lombok, đa ngôn ngữ |
+| — | [huong-dan-cai-dat.md](huong-dan-cai-dat.md) | **Hướng dẫn cài cho người mới**: Docker, khoá Google, bot Telegram, `.env`, sao lưu, gỡ lỗi |
 
 ## Trạng thái
 
@@ -29,3 +30,4 @@ App quản lý công việc tự host bằng Docker, nhiều người dùng (đ�
 - 2026-10-25: Đổi tên dự án **ManagementTask → Workbench** (repo GitHub, image Docker Hub, tên app, database).
 - 2026-10-25: **Phát hành v0.1.0** lên Docker Hub [`sonnld3007/workbench`](https://hub.docker.com/r/sonnld3007/workbench) (amd64 + arm64). Đã cài thử từ thư mục trống bằng image công khai và quét lại image: không có bí mật.
 - 2026-10-25: **Chuyển backend sang Spring Boot 4** (Java 25, Maven, DDD, Lombok). Next.js chỉ còn là giao diện, gọi REST API. Phát hành 2 image: `workbench` (web) + `workbench-api`.
+- 2026-10-25: Giao diện mèo cute (pastel hồng – đào, font Nunito, mascot SVG); đa ngôn ngữ **Tiếng Việt / English / Deutsch** (cả lỗi API, tin Telegram, form mẫu mặc định); thẻ task hiện task con. Viết [hướng dẫn cài cho người mới](huong-dan-cai-dat.md). Phát hành **v0.3.0**.
