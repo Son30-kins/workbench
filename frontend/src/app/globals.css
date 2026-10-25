@@ -110,96 +110,7 @@ dialog::backdrop {
 .cat-zzz { animation: cat-float 2.6s ease-in-out infinite; }
 .cat-zzz-2 { animation: cat-float 2.6s ease-in-out 0.8s infinite; }
 .cat-wiggle { transform-box: fill-box; transform-origin: bottom center; animation: cat-wiggle 4s ease-in-out infinite; }
-/* ===== Mèo nhắc việc (components/kitten.tsx) =====
-   Đi: chân trước / chân sau mỗi chân 2 khớp, cùng bên lệch nửa nhịp, bên xa lệch thêm nửa nhịp; thân nhún 2 lần / bước.
-   Ngồi: thở, nghiêng đầu, chớp mắt, giật tai, vẫy đuôi. Các nhóm xoay quanh gốc toạ độ của chính nó (view-box, 0 0). */
-.kleg-upper, .kleg-lower { transform-box: view-box; transform-origin: 0 0; }
-.kitten-walking .kleg-front-upper { animation: kleg-front-upper 0.64s linear infinite; }
-.kitten-walking .kleg-front-lower { animation: kleg-front-lower 0.64s linear infinite; }
-.kitten-walking .kleg-hind-upper { animation: kleg-hind-upper 0.64s linear infinite; }
-.kitten-walking .kleg-hind-lower { animation: kleg-hind-lower 0.64s linear infinite; }
-.kitten-walking .kleg-far { animation-delay: -0.32s; }
-.kitten-walking .kitten-bob { animation: kitten-bob 0.32s ease-in-out infinite; }
-.kitten-walking .kitten-head-walk { animation: kitten-head-walk 0.64s ease-in-out infinite; transform-box: view-box; transform-origin: 20px 30px; }
-
-/* Chân trước: 0–50% chống đất (đẩy về sau, bàn chân bám đất), 50–100% nhấc lên, gập cổ chân rồi vươn ra trước.
-   Biên độ nhỏ để bàn chân không nhổm khỏi mặt đất; thân nhún cao nhất đúng lúc chân thẳng đứng (25% / 75%). */
-@keyframes kleg-front-upper {
-  0% { transform: rotate(20deg); }
-  50% { transform: rotate(-16deg); }
-  66% { transform: rotate(-10deg); }
-  84% { transform: rotate(12deg); }
-  100% { transform: rotate(20deg); }
-}
-@keyframes kleg-front-lower {
-  0%, 50% { transform: rotate(0deg); }
-  60% { transform: rotate(-38deg); }
-  74% { transform: rotate(-62deg); }
-  90% { transform: rotate(-14deg); }
-  100% { transform: rotate(0deg); }
-}
-/* Chân sau gập chữ Z như mèo thật: đùi chéo ra trước, cẳng chéo về sau. Lệch nửa nhịp với chân trước cùng bên —
-   0–50% nhấc lên vươn ra trước, 50–100% chống đất đẩy về sau */
-@keyframes kleg-hind-upper {
-  0% { transform: rotate(-4deg); }
-  18% { transform: rotate(6deg); }
-  38% { transform: rotate(26deg); }
-  50% { transform: rotate(30deg); }
-  100% { transform: rotate(-4deg); }
-}
-@keyframes kleg-hind-lower {
-  0% { transform: rotate(-30deg); }
-  16% { transform: rotate(-72deg); }
-  36% { transform: rotate(-50deg); }
-  50% { transform: rotate(-36deg); }
-  75% { transform: rotate(-30deg); }
-  100% { transform: rotate(-30deg); }
-}
-@keyframes kitten-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2.5px); }
-}
-@keyframes kitten-head-walk {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-2deg); }
-  75% { transform: rotate(2deg); }
-}
-
-.kitten-live .kitten-breathe { animation: kitten-breathe 3.4s ease-in-out infinite; transform-box: view-box; transform-origin: 100px 210px; }
-.kitten-live .kitten-head { animation: kitten-head 5.2s ease-in-out infinite; transform-box: view-box; transform-origin: 100px 132px; }
-.kitten-live .kitten-eye { animation: kitten-blink 4.3s infinite; transform-box: fill-box; transform-origin: center; }
-.kitten-live .kitten-ear { animation: kitten-ear 6.5s infinite; transform-box: view-box; transform-origin: 128px 52px; }
-.kitten-live .kitten-tail { animation: kitten-tail 2.6s ease-in-out infinite; transform-box: view-box; transform-origin: 124px 200px; }
-@keyframes kitten-breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02, 0.99); }
-}
-@keyframes kitten-head {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-4deg); }
-  62% { transform: rotate(3deg); }
-}
-@keyframes kitten-blink {
-  0%, 91%, 100% { transform: scaleY(1); }
-  94% { transform: scaleY(0.08); }
-}
-@keyframes kitten-ear {
-  0%, 80%, 100% { transform: rotate(0deg); }
-  83% { transform: rotate(-12deg); }
-  86% { transform: rotate(4deg); }
-  89% { transform: rotate(-8deg); }
-  92% { transform: rotate(0deg); }
-}
-@keyframes kitten-tail {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-10deg); }
-}
-@keyframes kitten-pop {
-  0% { transform: translateY(6px) scale(0.92); }
-  60% { transform: translateY(-3px) scale(1.03); }
-  100% { transform: none; }
-}
-.kitten-pop { animation: kitten-pop 0.35s ease-out; transform-origin: bottom center; }
+/* Thẻ mèo nhắc việc hiện lên nhẹ nhàng */
 @keyframes cat-bubble-in {
   from { opacity: 0; transform: translateY(6px) scale(0.96); }
   to { opacity: 1; transform: none; }
@@ -207,7 +118,5 @@ dialog::backdrop {
 .cat-bubble { animation: cat-bubble-in 0.25s ease-out; transform-origin: bottom right; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cat-breathe, .cat-zzz, .cat-zzz-2, .cat-wiggle, .cat-bubble, .kitten-pop,
-  .kleg-upper, .kleg-lower, .kitten-bob, .kitten-head-walk,
-  .kitten-breathe, .kitten-head, .kitten-eye, .kitten-ear, .kitten-tail { animation: none !important; }
+  .cat-breathe, .cat-zzz, .cat-zzz-2, .cat-wiggle, .cat-bubble { animation: none !important; }
 }

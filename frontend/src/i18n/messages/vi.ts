@@ -270,7 +270,7 @@ export const vi = {
     languageTitle: "Ngôn ngữ",
     languageHint: "Áp dụng cho giao diện, thông báo và tin nhắn Telegram.",
     catTitle: "Mèo nhắc việc",
-    catHint: "Thỉnh thoảng một chú mèo chạy ra góc màn hình nhắc task quá hạn hoặc sắp đến hạn. Lưu riêng trên thiết bị này.",
+    catHint: "Thỉnh thoảng hiện một thẻ có hình mèo ở góc màn hình nhắc task quá hạn hoặc sắp đến hạn. Lưu riêng trên thiết bị này.",
     catEnabled: "Bật mèo nhắc việc",
     catTry: "Gọi mèo ra ngay",
     remindersTitle: "Lịch nhắc theo mức ưu tiên",

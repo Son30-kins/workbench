@@ -184,15 +184,12 @@ Chữ trên nền đều đạt tương phản WCAG AA (≥ 4.5:1), riêng `dang
 | `PeekingCat` — mèo ló đầu | trên bảng minh hoạ trang đăng nhập, trên nút Sáng/Tối của panel |
 | `SleepingCat` / `EmptyState` — mèo ngủ | cột trống, danh sách trống, chưa có form mẫu, chưa có thông báo |
 | `CatInBox` — mèo trong thùng | trang 404 |
-| `WalkingKitten` / `SittingKitten` (`components/kitten.tsx`) — bé mèo mướp xám mắt xanh | **mèo nhắc việc** (`components/cat-reminder.tsx`), thẻ Cài đặt |
+| `SittingKitten` (`components/kitten.tsx`) — bé mèo mướp xám mắt xanh, ảnh tĩnh | thẻ **mèo nhắc việc** (`components/cat-reminder.tsx`), thẻ Cài đặt |
 
-**Mèo nhắc việc:** bé mèo mướp xám (SVG tự vẽ, phong cách chibi: mắt to, má hồng, đuôi khoang). Khi đi: nhìn ngang,
-mỗi chân 2 khớp (vai/hông + gối), chân sau gập chữ Z có bắp đùi, chân trước và chân sau cùng bên lệch nửa nhịp, thân
-nhún theo bước, đuôi uốn lượn (SMIL). Chân vẽ 2 lớp (viền tối dưới, lông trên) để khớp liền mạch. Khi nói: ngồi quay
-mặt ra — thở, nghiêng đầu, chớp mắt, giật tai, vẫy đuôi. Thỉnh thoảng đi vào góc dưới phải, nói task quá hạn (ưu tiên cao nhất trước) hoặc task đến hạn
-trong 24 giờ, có nút **Xem ngay** (mở task) / **Để sau** (2 giờ nữa mới ra lại); không ai bấm thì 25 giây sau tự đi.
-Ra sớm nhất 8 giây sau khi mở app, cách nhau ≥ 45 phút, chỉ khi tab đang mở và không có hộp thoại. Bật / tắt và
-"Gọi mèo ra ngay" ở **Cài đặt** — lưu trong `localStorage` của từng thiết bị. Chế độ giảm chuyển động: mèo hiện ngay,
-không bước.
+**Mèo nhắc việc:** thỉnh thoảng hiện ở góc dưới phải một thẻ có hình bé mèo mướp (ảnh tĩnh — không chuyển động) kèm
+lời nhắc task quá hạn (ưu tiên cao nhất trước) hoặc task đến hạn trong 24 giờ; nút **Xem ngay** (mở task) / **Để sau**
+(2 giờ nữa mới hiện lại); không ai bấm thì 25 giây sau tự ẩn. Hiện sớm nhất 8 giây sau khi mở app, cách nhau ≥ 45 phút,
+chỉ khi tab đang mở và không có hộp thoại. Bật / tắt và "Gọi mèo ra ngay" ở **Cài đặt** — lưu trong `localStorage`
+của từng thiết bị.
 
 Mèo ngủ thở nhẹ, mèo ló đầu lắc lư; chuyển động tự tắt khi hệ điều hành bật "giảm chuyển động" (`prefers-reduced-motion`). Tiêu đề cột có emoji: 🧶 Cần làm · 🐈 Đang làm · 😸 Hoàn thành.
