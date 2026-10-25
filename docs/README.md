@@ -31,3 +31,4 @@ App quản lý công việc tự host bằng Docker, nhiều người dùng (đ�
 - 2026-10-25: **Phát hành v0.1.0** lên Docker Hub [`sonnld3007/workbench`](https://hub.docker.com/r/sonnld3007/workbench) (amd64 + arm64). Đã cài thử từ thư mục trống bằng image công khai và quét lại image: không có bí mật.
 - 2026-10-25: **Chuyển backend sang Spring Boot 4** (Java 25, Maven, DDD, Lombok). Next.js chỉ còn là giao diện, gọi REST API. Phát hành 2 image: `workbench` (web) + `workbench-api`.
 - 2026-10-25: Giao diện mèo cute (pastel hồng – đào, font Nunito, mascot SVG); đa ngôn ngữ **Tiếng Việt / English / Deutsch** (cả lỗi API, tin Telegram, form mẫu mặc định); thẻ task hiện task con. Viết [hướng dẫn cài cho người mới](huong-dan-cai-dat.md). Phát hành **v0.3.0**.
+- 2026-10-25: **Mèo nhắc việc** — bé mèo mướp xám bước bằng 4 chân có khớp, thỉnh thoảng đi ra góc màn hình nhắc task quá hạn / sắp đến hạn, ngồi nói rồi chạy đi (bật / tắt trong Cài đặt). Phát hành **v0.4.0**.

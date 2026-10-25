@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CAT_EVENT, isCatEnabled, setCatEnabled } from "@/components/cat-reminder";
-import { WalkingCat } from "@/components/cats";
+import { SittingKitten } from "@/components/kitten";
 import { Button, Card } from "@/components/ui";
 import { useI18n } from "@/i18n/provider";
 
@@ -18,7 +18,7 @@ export function CatReminderCard() {
 
   return (
     <Card className="flex flex-wrap items-center gap-5 p-6">
-      <WalkingCat className="w-20 shrink-0" />
+      <SittingKitten className="w-20 shrink-0" />
       <div className="min-w-0 flex-1 space-y-3">
         <div>
           <h2 className="text-lg font-bold">{st.catTitle}</h2>

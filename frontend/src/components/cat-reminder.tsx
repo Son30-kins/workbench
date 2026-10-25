@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { catReminderAction } from "@/actions/tasks";
-import { WalkingCat } from "@/components/cats";
+import { SittingKitten, WalkingKitten } from "@/components/kitten";
 import { formatInTz } from "@/core/time";
 import { useI18n } from "@/i18n/provider";
 
@@ -223,8 +223,13 @@ export function CatReminder({ tz }: { tz: string }) {
           transition: reducedMotion ? "none" : `transform ${phase === "leaving" ? "1.4s ease-in" : "2.4s linear"}`,
         }}
       >
+        {/* Đi: mèo nhìn ngang (lật khi chạy về bên phải); dừng lại nói: ngồi quay mặt ra */}
         <div style={{ transform: facingRight ? "scaleX(-1)" : undefined }}>
-          <WalkingCat walking={walking} className="w-28 drop-shadow-sm" />
+          {walking ? (
+            <WalkingKitten animate={!reducedMotion} className="w-36 drop-shadow-sm" />
+          ) : (
+            <SittingKitten animate={!reducedMotion} className="kitten-pop mr-2 w-28 drop-shadow-sm" />
+          )}
         </div>
       </div>
     </div>
