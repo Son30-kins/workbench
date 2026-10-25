@@ -17,7 +17,7 @@ App quản lý công việc tự host bằng Docker: điền **form mẫu** → 
 
 ## Cài đặt
 
-Xem hướng dẫn đầy đủ trên [Docker Hub](https://hub.docker.com/r/sonnld3007/workbench) hoặc [docs/08-dong-goi-docker.md](docs/08-dong-goi-docker.md).
+Lần đầu cài? Làm theo **[hướng dẫn từng bước cho người mới](docs/huong-dan-cai-dat.md)** (Windows / macOS / Linux, khoá Google, bot Telegram, sao lưu, gỡ lỗi). Chi tiết kỹ thuật: [docs/08-dong-goi-docker.md](docs/08-dong-goi-docker.md).
 
 ```bash
 mkdir workbench && cd workbench

@@ -1,6 +1,8 @@
 # Workbench
 
-App quản lý công việc **tự host**: điền **form mẫu** → app **tự tạo cả chuỗi task** với hạn chót và mức ưu tiên, **nhắc việc qua Telegram** trước khi đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người.
+App quản lý công việc **tự host**: điền **form mẫu** → app **tự tạo cả chuỗi task** với hạn chót và mức ưu tiên, **nhắc việc qua Telegram** trước khi đến hạn. Đăng nhập bằng Google, nhiều người dùng, dữ liệu riêng từng người. Giao diện **Tiếng Việt / English / Deutsch**.
+
+**Lần đầu cài?** Làm theo [hướng dẫn từng bước cho người mới](https://github.com/Son30-kins/workbench/blob/main/docs/huong-dan-cai-dat.md) — Windows / macOS / Linux, tạo khoá Google, bot Telegram, sao lưu, gỡ lỗi.
 
 Gồm 2 image phát hành cùng phiên bản: **`sonnld3007/workbench`** (giao diện web, Next.js) và **`sonnld3007/workbench-api`** (backend Spring Boot). File `docker-compose.yml` (tải ở bước dưới) chạy cả hai cùng PostgreSQL.
 
@@ -41,7 +43,8 @@ docker compose pull && docker compose up -d
 Database tự cập nhật khi khởi động. Nên sao lưu trước:
 
 ```bash
-docker compose exec db pg_dump -U workbench workbench > backup-$(date +%F).sql
+docker compose exec db pg_dump -U workbench --clean --if-exists -f /tmp/backup.sql workbench
+docker compose cp db:/tmp/backup.sql backup.sql
 ```
 
 ## Tag
