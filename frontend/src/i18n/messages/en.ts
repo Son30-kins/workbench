@@ -271,7 +271,7 @@ export const en: Messages = {
     languageTitle: "Language",
     languageHint: "Used for the interface, notifications and Telegram messages.",
     catTitle: "Reminder cat",
-    catHint: "Every now and then a cat walks onto the screen to remind you about overdue or soon-due tasks. Saved on this device only.",
+    catHint: "Every now and then a card with a cat pops up in the corner to remind you about overdue or soon-due tasks. Saved on this device only.",
     catEnabled: "Turn on the reminder cat",
     catTry: "Call the cat now",
     remindersTitle: "Reminders by priority",

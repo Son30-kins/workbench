@@ -271,7 +271,7 @@ export const de: Messages = {
     languageTitle: "Sprache",
     languageHint: "Gilt für Oberfläche, Benachrichtigungen und Telegram-Nachrichten.",
     catTitle: "Erinnerungskatze",
-    catHint: "Ab und zu läuft eine Katze ins Bild und erinnert dich an überfällige oder bald fällige Aufgaben. Nur auf diesem Gerät gespeichert.",
+    catHint: "Ab und zu erscheint unten in der Ecke eine Karte mit einer Katze und erinnert dich an überfällige oder bald fällige Aufgaben. Nur auf diesem Gerät gespeichert.",
     catEnabled: "Erinnerungskatze einschalten",
     catTry: "Katze jetzt rufen",
     remindersTitle: "Erinnerungen nach Priorität",
