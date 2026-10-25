@@ -86,7 +86,7 @@
 - [x] Tạo repo GitHub [`Son30-kins/workbench`](https://github.com/Son30-kins/workbench) (public), bật secret scanning, push protection, Dependabot alerts, private vulnerability reporting (2026-10-24)
 - [x] Bảo vệ nhánh `main`: bắt buộc qua PR, CI phải xanh, cấm force-push / xoá nhánh
 - [ ] Bật 2FA cho GitHub và Docker Hub (bạn tự làm)
-- [ ] Thêm `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` vào GitHub Actions secrets
+- [x] Thêm `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` (quyền Read & Write) vào GitHub Actions secrets
 - [x] CI: lint, typecheck, test (có Postgres), build, build image + quét bí mật trên mọi push / PR
 
 ## 9.7 Riêng tư khi repo công khai
