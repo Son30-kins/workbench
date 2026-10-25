@@ -186,11 +186,11 @@ function MenuLink({ href, icon, onClick, children }: { href: string; icon: React
 export function Avatar({ name, image, size = 40 }: { name: string; image: string | null; size?: number }) {
   if (image) {
     // eslint-disable-next-line @next/next/no-img-element -- ảnh từ Google, không qua tối ưu ảnh của Next
-    return <img src={image} alt={name} width={size} height={size} referrerPolicy="no-referrer" className="rounded-full object-cover" style={{ width: size, height: size }} />;
+    return <img src={image} alt={name} width={size} height={size} referrerPolicy="no-referrer" className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />;
   }
   const initials = name.split(" ").filter(Boolean).slice(-2).map((p) => p[0]).join("").toUpperCase();
   return (
-    <span className="flex items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary" style={{ width: size, height: size }}>
+    <span className="flex shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary" style={{ width: size, height: size }}>
       {initials || "?"}
     </span>
   );

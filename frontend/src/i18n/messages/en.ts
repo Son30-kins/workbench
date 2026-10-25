@@ -252,6 +252,17 @@ export const en: Messages = {
     choose: "— Choose —",
   },
 
+  catReminder: {
+    label: "Reminder cat",
+    overdueOne: (title) => `Meow~ “${title}” is overdue!`,
+    overdueMany: (n, title) => `Meow~ You have ${n} overdue tasks. Start with “${title}”?`,
+    soon: (title, when) => `Meow~ “${title}” is due at ${when}!`,
+    allClear: "Meow~ Nothing urgent. Nice work! 🐟",
+    view: "Show me",
+    later: "Later",
+    close: "Close",
+  },
+
   settings: {
     title: "Settings",
     description: "Your account, reminder channels and reminder schedule.",
@@ -259,6 +270,10 @@ export const en: Messages = {
     administrator: "Administrator",
     languageTitle: "Language",
     languageHint: "Used for the interface, notifications and Telegram messages.",
+    catTitle: "Reminder cat",
+    catHint: "Every now and then a cat walks onto the screen to remind you about overdue or soon-due tasks. Saved on this device only.",
+    catEnabled: "Turn on the reminder cat",
+    catTry: "Call the cat now",
     remindersTitle: "Reminders by priority",
     remindersHint: "Pick when to be reminded before the due date. The app also always reminds you when a task becomes overdue.",
     overdueRepeat: "Repeat overdue reminders every",

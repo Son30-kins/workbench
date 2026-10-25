@@ -252,6 +252,17 @@ export const de: Messages = {
     choose: "— Auswählen —",
   },
 
+  catReminder: {
+    label: "Erinnerungskatze",
+    overdueOne: (title) => `Miau~ „${title}“ ist überfällig!`,
+    overdueMany: (n, title) => `Miau~ Du hast ${n} überfällige Aufgaben. Mit „${title}“ anfangen?`,
+    soon: (title, when) => `Miau~ „${title}“ ist um ${when} fällig!`,
+    allClear: "Miau~ Nichts Dringendes. Gut gemacht! 🐟",
+    view: "Ansehen",
+    later: "Später",
+    close: "Schließen",
+  },
+
   settings: {
     title: "Einstellungen",
     description: "Dein Konto, Erinnerungskanäle und dein Erinnerungsplan.",
@@ -259,6 +270,10 @@ export const de: Messages = {
     administrator: "Administrator",
     languageTitle: "Sprache",
     languageHint: "Gilt für Oberfläche, Benachrichtigungen und Telegram-Nachrichten.",
+    catTitle: "Erinnerungskatze",
+    catHint: "Ab und zu läuft eine Katze ins Bild und erinnert dich an überfällige oder bald fällige Aufgaben. Nur auf diesem Gerät gespeichert.",
+    catEnabled: "Erinnerungskatze einschalten",
+    catTry: "Katze jetzt rufen",
     remindersTitle: "Erinnerungen nach Priorität",
     remindersHint: "Wähle, wann du vor der Frist erinnert wirst. Zusätzlich erinnert die App immer, sobald eine Aufgabe überfällig ist.",
     overdueRepeat: "Bei Überfälligkeit erneut erinnern alle",
