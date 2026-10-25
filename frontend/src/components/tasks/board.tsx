@@ -32,6 +32,7 @@ export function Board({ tasks, tz, now, openTask }: { tasks: TaskDTO[]; tz: stri
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const { openEdit, openNew } = useTaskDialog();
+  const { t } = useI18n();
 
   // Dữ liệu mới từ server (sau khi lưu / tự làm mới) thay cho bản lạc quan
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ props → state cục bộ cho kéo thả
@@ -76,7 +77,7 @@ export function Board({ tasks, tz, now, openTask }: { tasks: TaskDTO[]; tz: stri
       all.map((t) => (t.id === id ? { ...t, status: to, completedAt: to === "DONE" ? new Date() : null } : t)),
     );
     startTransition(async () => {
-      const res = await moveTaskAction(id, to);
+      const res = await moveTaskAction(id, to).catch(() => ({ ok: false as const, error: t.common.genericError }));
       if (!res.ok) {
         setItems(previous);
         setError(res.error);

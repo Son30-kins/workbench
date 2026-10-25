@@ -100,6 +100,7 @@ export const vi = {
     noDue: "Không hạn",
     overdueTitle: "Đã quá hạn",
     soonTitle: "Đến hạn trong 24 giờ",
+    moreSubtasks: (n: number) => `+${n} task con khác — bấm vào thẻ để xem`,
   },
 
   table: {
