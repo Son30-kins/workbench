@@ -1,7 +1,17 @@
 version: 2
 updates:
+  # Frontend (Next.js)
   - package-ecosystem: npm
-    directory: /
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Backend (Spring Boot) — phiên bản thư viện do spring-boot-starter-parent quản lý
+  - package-ecosystem: maven
+    directory: /backend
     schedule:
       interval: weekly
     groups:
@@ -14,10 +24,12 @@ updates:
       interval: weekly
 
   - package-ecosystem: docker
-    directory: /
+    directories: [/frontend, /backend]
     schedule:
       interval: weekly
     ignore:
-      # Giữ Node LTS (24); lên bản lớn thì nâng tay cùng engines trong package.json
+      # Giữ bản LTS (Node 24, Java 25); lên bản lớn thì nâng tay
       - dependency-name: node
+        update-types: [version-update:semver-major]
+      - dependency-name: eclipse-temurin
         update-types: [version-update:semver-major]

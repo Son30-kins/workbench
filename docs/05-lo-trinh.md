@@ -86,13 +86,24 @@ Chi tiết: [08-dong-goi-docker.md](08-dong-goi-docker.md)
 - [ ] AI: dán đoạn văn bản / tin nhắn → tự điền form hoặc tạo task
 - [ ] Thống kê: số task hoàn thành, tỉ lệ trễ hạn
 
+## Giai đoạn 6 — Chuyển backend sang Spring Boot (v0.2.0) ✅
+
+- [x] Backend Spring Boot 4.1 / Java 25 / Maven trong `backend/`, tổ chức DDD (domain · application · infrastructure · interfaces), Lombok
+- [x] Flyway thay Drizzle; Spring Data JPA; cột jsonb map bằng Jackson 3
+- [x] Spring Security OAuth2 (Google OIDC) + Spring Session JDBC thay Better Auth — giữ nguyên redirect URI cũ
+- [x] Job nhắc việc / bản tin bằng `@Scheduled`; bot Telegram bằng HTTP interface client + virtual thread
+- [x] REST API + Problem Details; chống CSRF bằng header `X-Requested-By`
+- [x] Next.js chỉ còn là giao diện: Server Component / Server Action gọi API, rewrite `/api/auth/**`
+- [x] Test: JUnit + Testcontainers (cách ly dữ liệu, nhắc việc đúng 1 lần, bảo mật qua MockMvc); e2e trình duyệt qua cả hai dịch vụ
+- [x] 2 image Docker (`workbench`, `workbench-api`), CI build + test cả hai
+
 ## Rủi ro & lưu ý
 
 | Rủi ro | Cách xử lý |
 |--------|-----------|
 | Sai múi giờ khi tính hạn | Lưu UTC, test kỹ các trường hợp qua ngày |
 | Thông báo gửi trùng / không gửi | Trạng thái reminder + transaction, log lỗi |
-| Worker chết khi tắt máy | Chạy local thì chỉ nhắc khi máy bật → cần deploy server để dùng thật |
+| Job nhắc việc dừng khi tắt máy | Chạy local thì chỉ nhắc khi máy bật → cần deploy server để dùng thật |
 | Lộ dữ liệu giữa các người dùng | Lọc `user_id` tập trung ở lớp dữ liệu, có test riêng cho phân quyền |
 | Người lạ đăng nhập vào bản cài | Danh sách email / tên miền được phép; admin khoá tài khoản |
 | Google không cho đăng nhập qua IP mạng LAN | Ghi rõ trong hướng dẫn: dùng `localhost` hoặc tên miền + HTTPS |

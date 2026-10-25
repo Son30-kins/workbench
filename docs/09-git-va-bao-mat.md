@@ -53,10 +53,12 @@
 - `.dockerignore` chặn: `.env*` (trừ `.env.example`), `.git`, `node_modules`, `backups/`, `*.sql`, `docs/`.
 - Không dùng `ARG`/`ENV` để truyền bí mật trong `Dockerfile` (giá trị sẽ nằm vĩnh viễn trong layer image).
 - Next.js: chỉ biến có tiền tố `NEXT_PUBLIC_` mới được đưa ra trình duyệt → **cấm** đặt bí mật với tiền tố này; `lib/env.ts` kiểm tra điều này.
-- **Khoá Next.js tự sinh lúc build** (Draft Mode, mã hoá Server Action) sẽ giống nhau ở mọi bản cài nếu để trong image công khai. Xử lý ([docker/build-keys.mjs](../docker/build-keys.mjs)):
+- **Khoá Next.js tự sinh lúc build** (Draft Mode, mã hoá Server Action) sẽ giống nhau ở mọi bản cài nếu để trong image công khai. Xử lý ([docker/build-keys.mjs](../frontend/docker/build-keys.mjs)):
   - lúc build: thay bằng giá trị rỗng → image không chứa khoá nào
   - lúc container khởi động: sinh khoá riêng của bản cài bằng HMAC-SHA256 từ `AUTH_SECRET` và đặt `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`
-- CI quét image bằng [Trivy](https://github.com/aquasecurity/trivy): có bí mật, hoặc lỗ hổng CRITICAL đã có bản vá → **không** đẩy lên Docker Hub.
+- CI quét **cả 2 image** (`workbench`, `workbench-api`) bằng [Trivy](https://github.com/aquasecurity/trivy): có bí mật, hoặc lỗ hổng CRITICAL đã có bản vá → **không** đẩy lên Docker Hub.
+- `docker-compose.yml` truyền cho mỗi container **đúng biến nó cần** — web không bao giờ thấy key Google / Telegram / mật khẩu DB.
+- Token Telegram nằm trong URL gọi API → backend xoá token khỏi mọi thông điệp lỗi trước khi ghi log (`TelegramClient.safeMessage`).
 - Đã kiểm tra 2026-10-24: export toàn bộ filesystem của image rồi quét bằng gitleaks và Trivy → không có bí mật, không có file `.env`.
 
 **3. Không để bí mật lọt ra lúc chạy**
@@ -68,7 +70,7 @@
 - Dùng **Personal Access Token** quyền *Read & Write* cho CI — không dùng mật khẩu tài khoản.
 - Bật **xác thực 2 lớp (2FA)** cho tài khoản Docker Hub và GitHub.
 - Mọi GitHub Action được **ghim theo commit SHA** (không theo tag có thể bị đổi); workflow chỉ có quyền `contents: read`.
-- **Dependabot** đề xuất cập nhật npm, GitHub Actions và base image hằng tuần.
+- **Dependabot** đề xuất cập nhật npm (frontend), Maven (backend), GitHub Actions và base image hằng tuần.
 
 ## 9.5 Nếu lỡ lộ bí mật
 

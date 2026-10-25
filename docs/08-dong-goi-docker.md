@@ -24,77 +24,75 @@ Migration database tự chạy khi container khởi động — người cài kh
 ## 8.2 Các container
 
 ```
-┌──────────────────────── docker compose ────────────────────────┐
-│                                                                │
-│  app      (sonnld3007/workbench, lệnh `web`)   cổng 3000  │
-│  worker   (cùng image, lệnh `worker`)   nhắc việc + bot Telegram│
-│  db       (postgres:17-alpine)          volume pgdata           │
-│  caddy    (tuỳ chọn, profile https)     HTTPS tự động           │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+┌──────────────────────── docker compose ─────────────────────────────┐
+│                                                                     │
+│  web     (sonnld3007/workbench)       Next.js, cổng 3000 ra ngoài   │
+│  api     (sonnld3007/workbench-api)   Spring Boot — REST, đăng nhập │
+│                                       Google, nhắc việc, bot Telegram│
+│  db      (postgres:17-alpine)         volume pgdata                 │
+│  caddy   (tuỳ chọn, profile https)    HTTPS tự động                 │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Một image** cho cả `app` và `worker`, chỉ khác lệnh chạy → phiên bản luôn khớp nhau.
-- Cả hai đều chạy migration khi khởi động; advisory lock của Postgres đảm bảo không chạy chồng lên nhau.
-- `db` không mở cổng ra ngoài, chỉ `app` và `worker` kết nối được.
+- Chỉ `web` mở cổng ra ngoài. `api` và `db` chỉ nói chuyện trong mạng nội bộ của compose.
+- `api` chạy **Flyway** khi khởi động → database tự cập nhật khi lên bản mới.
+- Job nhắc việc và bot Telegram chạy **bên trong** `api` (không còn container worker riêng).
 - `caddy` bật bằng `docker compose --profile https up -d` khi có tên miền.
 
 ## 8.3 `docker-compose.yml`
 
 File thật: [docker-compose.yml](../docker-compose.yml). Điểm chính:
-- `DATABASE_URL` được ghép từ `POSTGRES_PASSWORD` — thiếu mật khẩu thì `docker compose` dừng ngay và báo lỗi.
-- `app` có healthcheck gọi `/api/health` (kiểm tra kết nối database).
-- `APP_PORT` đổi cổng trên máy (mặc định 3000).
-
-Đã thử 2026-10-24: thư mục trống + `docker-compose.yml` + `.env` → `docker compose up -d` → app healthy, worker chạy, đăng nhập & tạo task được.
+- **Mỗi container chỉ nhận đúng biến nó cần** (khai báo `environment:` từng biến, không dùng `env_file` chung):
+  `web` chỉ biết `API_URL` + `AUTH_SECRET`; key Google / Telegram / mật khẩu DB chỉ vào `api`.
+- Thiếu biến bắt buộc (`${VAR:?…}`) → `docker compose` dừng ngay và báo tên biến.
+- Healthcheck: `api` → `/actuator/health` (có kiểm tra database); `web` → `/api/health` (gọi được API).
+- `web` chờ `api` healthy, `api` chờ `db` healthy.
 
 ## 8.4 Cấu hình bằng biến môi trường (`.env.example`)
 
-| Biến | Bắt buộc | Mặc định | Ghi chú |
-|---|---|---|---|
-| `APP_URL` | ✅ | `http://localhost:3000` | Địa chỉ người dùng mở app — dùng cho Google OAuth redirect và link trong Telegram |
-| `AUTH_SECRET` | ✅ | — | ≥ 32 ký tự (`openssl rand -base64 32`). Cũng là gốc để sinh khoá nội bộ riêng của bản cài |
-| `POSTGRES_PASSWORD` | ✅ | — | Chỉ chữ và số (`openssl rand -hex 24`) vì được ghép vào URL kết nối |
-| `GOOGLE_CLIENT_ID` | ✅ | — | OAuth client của chính người cài (xem 8.10) |
-| `GOOGLE_CLIENT_SECRET` | ✅ | — | 🔒 Bí mật |
-| `TELEGRAM_BOT_TOKEN` | Nên có | — | 🔒 Bí mật. Thiếu thì vẫn chạy, nhắc việc chỉ hiện trong app, admin thấy cảnh báo |
-| `APP_VERSION` | | `latest` | Ghim phiên bản image, ví dụ `1.2.3` |
-| `APP_PORT` | | `3000` | Cổng trên máy |
-| `TZ` | | `Asia/Ho_Chi_Minh` | Múi giờ mặc định cho người dùng mới |
-| `ALLOWED_EMAILS` | | — | Giá trị ban đầu, ví dụ `a@gmail.com,b@gmail.com`; admin sửa tiếp trong app |
-| `ALLOWED_DOMAINS` | | — | Ví dụ `congty.com` — để trống = mọi tài khoản Google |
-| `DOMAIN` | | — | Chỉ cần khi dùng profile `https` |
+| Biến | Bắt buộc | Mặc định | Container | Ghi chú |
+|---|---|---|---|---|
+| `APP_URL` | ✅ | `http://localhost:3000` | api | Địa chỉ người dùng mở app — Google OAuth redirect và link trong Telegram |
+| `AUTH_SECRET` | ✅ | — | web | ≥ 32 ký tự (`openssl rand -base64 32`). Gốc sinh khoá mã hoá Server Action riêng của bản cài |
+| `POSTGRES_PASSWORD` | ✅ | — | api, db | `openssl rand -hex 24` |
+| `GOOGLE_CLIENT_ID` | ✅ | — | api | OAuth client của chính người cài (xem 8.10) |
+| `GOOGLE_CLIENT_SECRET` | ✅ | — | api | 🔒 Bí mật |
+| `TELEGRAM_BOT_TOKEN` | Nên có | — | api | 🔒 Bí mật. Thiếu thì vẫn chạy, nhắc việc chỉ hiện trong app |
+| `COOKIE_SECURE` | | `false` | api | `true` khi chạy HTTPS |
+| `APP_VERSION` | | `latest` | web, api | Ghim phiên bản, ví dụ `0.2.0` (2 image luôn cùng số phiên bản) |
+| `APP_PORT` | | `3000` | web | Cổng trên máy |
+| `TZ` | | `Asia/Ho_Chi_Minh` | api | Múi giờ mặc định cho người dùng mới |
+| `ALLOWED_EMAILS` / `ALLOWED_DOMAINS` | | — | api | Giá trị ban đầu; admin sửa tiếp trong app |
+| `DOMAIN` | | — | caddy | Chỉ cần khi dùng profile `https` |
 
-**Nguyên tắc:**
-- Thiếu / sai biến bắt buộc → container **dừng ngay** và in rõ tên biến cần sửa (không in giá trị).
-- **Không có giá trị mặc định cho bí mật** — mỗi bản cài tự tạo bí mật của riêng mình.
-- Telegram dùng *long polling* → không cần tên miền public.
+**Nguyên tắc:** không có giá trị mặc định cho bí mật; Telegram dùng *long polling* → không cần tên miền public.
 
 ## 8.5 Dockerfile
 
-File thật: [Dockerfile](../Dockerfile). Multi-stage trên `node:24-alpine`:
+**API** — [backend/Dockerfile](../backend/Dockerfile), multi-stage:
+1. **build** (`eclipse-temurin:25-jdk-alpine`): `mvnw package` → tách jar thành các **lớp** (`java -Djarmode=tools … extract --layers`)
+   để thư viện ít thay đổi nằm lớp dưới, build lại và kéo image nhanh hơn.
+2. **runner** (`eclipse-temurin:25-jre-alpine`): chỉ JRE, user `app` (uid 1001), `-XX:MaxRAMPercentage=75`.
+Test không chạy trong Dockerfile (cần Docker cho Testcontainers) — CI chạy `./mvnw verify` trước khi build image.
 
+**Web** — [frontend/Dockerfile](../frontend/Dockerfile), multi-stage trên `node:24-alpine`:
 1. **deps** — `npm ci`
-2. **build** — `next build` (standalone) + bundle `worker.mjs`, `migrate.mjs` bằng esbuild → **xoá khoá Next.js tự sinh** khỏi bản build ([docker/build-keys.mjs](../docker/build-keys.mjs) `scrub`)
-3. **runner** — chỉ copy bản build; bỏ npm/yarn/corepack; chạy bằng user `app` (uid 1001)
+2. **build** — `next build` (standalone) → **xoá khoá Next.js tự sinh** khỏi bản build ([build-keys.mjs](../frontend/docker/build-keys.mjs) `scrub`)
+3. **runner** — chỉ bản build; bỏ npm/yarn/corepack; user `app` (uid 1001)
 
-`docker-entrypoint.sh`:
-- `web`: migrate → sinh khoá riêng của bản cài từ `AUTH_SECRET` (khoá Draft Mode + `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`) → `node server.js`
-- `worker`: migrate → `node dist/worker.mjs`
-- `migrate`: chỉ cập nhật database
-
-Kích thước: ~300 MB trên đĩa (riêng file chạy Node 24 đã 122 MB; code app ~48 MB).
+`frontend/docker-entrypoint.sh` sinh khoá riêng của bản cài từ `AUTH_SECRET` (Draft Mode + `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY`) rồi `node server.js`.
 
 ## 8.6 Phát hành image — Docker Hub
 
 **Mô hình:** chỉ phát hành image, ai muốn thì tự cài. Không vận hành bản cài chung nào.
 
-- Repo **public** trên Docker Hub: `sonnld3007/workbench`.
+- 2 repo **public** trên Docker Hub: `sonnld3007/workbench` (web) và `sonnld3007/workbench-api` (API) — luôn phát hành cùng số phiên bản.
 - **Tag:**
   | Tag | Ý nghĩa |
   |---|---|
   | `1.2.3` | Đúng một phiên bản — khuyên người cài ghim tag này (`APP_VERSION` trong `.env`) |
-  | `1.2`, `1` | Tự nhận bản vá / bản nhỏ mới nhất |
+  | `1.2`, `1` | Tự nhận bản vá / bản nhỏ mới nhất (tag số major chỉ có từ bản 1.0) |
   | `latest` | Bản ổn định mới nhất |
 - **GitHub Actions** (`.github/workflows/release.yml`): khi push tag git `v1.2.3` →
   1. chạy test
@@ -122,7 +120,7 @@ Kích thước: ~300 MB trên đĩa (riêng file chạy Node 24 đã 122 MB; cod
 
 ## 8.8 Môi trường phát triển
 
-- `docker-compose.dev.yml`: chỉ chạy `db` (Postgres), app chạy `npm run dev` ngoài Docker để hot-reload nhanh.
+- `docker-compose.dev.yml`: chỉ chạy `db` (Postgres). API chạy `./mvnw spring-boot:run` (thư mục `backend/`), web chạy `npm run dev` (thư mục `frontend/`) ngoài Docker để hot-reload nhanh.
 - Trước khi phát hành: build image thật và chạy `docker compose up` từ thư mục trống, làm đúng các bước ở 8.1 để kiểm tra.
 
 ## 8.9 Tài liệu cho người cài
